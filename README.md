@@ -20,9 +20,9 @@ Usage:
 
   7 ui keys as follow:
   
-  + : zoomin
+  /+ : zoomin
     
-  - : zoomout
+  /- : zoomout
     
   ← : move left
 
