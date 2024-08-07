@@ -13,19 +13,27 @@ just fillin in the textbox with the url "https://github.com/gitcpy/obsidian-merm
 Click "Add Plugin", A fews seconds later, the installing will be completed.
 
 Usage:
+
   Open a markdown file, if click a mermaid diagram if exits, there is a mermaid popout window will display.
 
   It is easy to manipulate the popout window. 
 
   7 keys as follow:
+  
   + : zoomin
+    
   - : zoomout
+    
   ← : move left
+
   → : move ight
+  
   ↑ : move up
+
   ↓ : move down
 
   and zoomout or zoomin by wheel， 
+  
   and drag by left click.
 
 
