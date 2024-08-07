@@ -24,15 +24,15 @@ Usage:
     
   <code>-</code> : zoomout
     
-  ← : move left
+  <code>←</code>  : move left
 
-  → : move ight
+  <code>→</code>  : move ight
   
-  ↑ : move up
+  <code>↑</code>  : move up
 
-  ↓ : move down
+  <code>↓</code>  : move down
 
-  x : close
+  <code>x</code>  : close
   
   and zoomout or zoomin by wheel， 
   
