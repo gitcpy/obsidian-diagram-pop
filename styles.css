@@ -1,0 +1,91 @@
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure the overlay is on top */
+}
+
+.popup-content {
+    position: relative;
+    overflow: hidden;
+    width: 70vw;
+    height: 70vh;
+    background: var(--popup-background);
+    border: 1px solid #ccc;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transform-origin: center; /* Ensure scaling is centered */
+    z-index: 1001; /* Ensure the content is on top of the overlay */
+}
+
+.popup-content svg {
+    display: block;
+    margin: auto;
+}
+
+.button-container {
+    position: absolute;
+    bottom: 50px; /* Adjusted for desired position */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.7); /* Semi-transparent background for the button container */
+    border-radius: 5px;
+    padding: 5px;
+    backdrop-filter: blur(5px); /* Background semi-blur */
+    z-index: 1002; /* Ensure the button container is on top of the content */
+}
+
+.control-button {
+    background: rgba(255, 255, 255, 0.7); /* Semi-transparent background */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    color: rgb(0 0 0 / 52%); /* Correct color */
+}
+
+.control-button:hover {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.arrow-up, .arrow-down, .arrow-left, .arrow-right, .zoom-in, .zoom-out, .close-popup {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Light mode */
+:root {
+    --popup-background: white;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --popup-background: #333;
+    }
+}
+
+.mermaid {
+    display: flex;
+    justify-content: center;
+ 
+}
+
+.mermaid svg {
+    width: auto;
+    height: auto;
+    max-height: 100%;
+}
