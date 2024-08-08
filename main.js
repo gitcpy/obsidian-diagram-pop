@@ -123,6 +123,86 @@ class MermaidPopupPlugin extends obsidian_1.Plugin {
             const scale = evt.deltaY < 0 ? 1.1 : 0.9;
             this.zoomPopupAtCursor(popup, scale, overlay, evt);
         });
+        /*连续按键 start****************************************************/
+        zoomInButton.addEventListener('mousedown', (evt) => {
+            evt.stopPropagation();
+            const interval = setInterval(() => {
+                this.zoomPopup(popup, 1.1, overlay);
+            }, 100); // Adjust the interval time as needed
+            const clear = () => {
+                clearInterval(interval);
+                document.removeEventListener('mouseup', clear);
+                zoomInButton.removeEventListener('mouseleave', clear);
+            };
+            document.addEventListener('mouseup', clear);
+            zoomInButton.addEventListener('mouseleave', clear);
+        });
+        zoomOutButton.addEventListener('mousedown', (evt) => {
+            evt.stopPropagation();
+            const interval = setInterval(() => {
+                this.zoomPopup(popup, 0.9, overlay);
+            }, 100);
+            const clear = () => {
+                clearInterval(interval);
+                document.removeEventListener('mouseup', clear);
+                zoomOutButton.removeEventListener('mouseleave', clear);
+            };
+            document.addEventListener('mouseup', clear);
+            zoomOutButton.addEventListener('mouseleave', clear);
+        });
+        upButton.addEventListener('mousedown', (evt) => {
+            evt.stopPropagation();
+            const interval = setInterval(() => {
+                this.movePopup(popup, 0, -20);
+            }, 100);
+            const clear = () => {
+                clearInterval(interval);
+                document.removeEventListener('mouseup', clear);
+                upButton.removeEventListener('mouseleave', clear);
+            };
+            document.addEventListener('mouseup', clear);
+            upButton.addEventListener('mouseleave', clear);
+        });
+        downButton.addEventListener('mousedown', (evt) => {
+            evt.stopPropagation();
+            const interval = setInterval(() => {
+                this.movePopup(popup, 0, 20);
+            }, 100);
+            const clear = () => {
+                clearInterval(interval);
+                document.removeEventListener('mouseup', clear);
+                downButton.removeEventListener('mouseleave', clear);
+            };
+            document.addEventListener('mouseup', clear);
+            downButton.addEventListener('mouseleave', clear);
+        });
+        leftButton.addEventListener('mousedown', (evt) => {
+            evt.stopPropagation();
+            const interval = setInterval(() => {
+                this.movePopup(popup, -20, 0);
+            }, 100);
+            const clear = () => {
+                clearInterval(interval);
+                document.removeEventListener('mouseup', clear);
+                leftButton.removeEventListener('mouseleave', clear);
+            };
+            document.addEventListener('mouseup', clear);
+            leftButton.addEventListener('mouseleave', clear);
+        });
+        rightButton.addEventListener('mousedown', (evt) => {
+            evt.stopPropagation();
+            const interval = setInterval(() => {
+                this.movePopup(popup, 20, 0);
+            }, 100);
+            const clear = () => {
+                clearInterval(interval);
+                document.removeEventListener('mouseup', clear);
+                rightButton.removeEventListener('mouseleave', clear);
+            };
+            document.addEventListener('mouseup', clear);
+            rightButton.addEventListener('mouseleave', clear);
+        });
+        /*连续按键 end*************************************************/
     }
     movePopup(popup, dx, dy) {
         const style = window.getComputedStyle(popup);
