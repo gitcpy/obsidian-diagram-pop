@@ -1,0 +1,13 @@
+{
+    "name": "obsidian-mermaid-popup",
+    "version": "0.1.0",
+    "description": "Show mermaid diagrams in a draggable and resizable popup",
+    "main": "main.js",
+    "scripts": {
+        "build": "tsc"
+    },
+    "devDependencies": {
+        "obsidian": "latest",
+        "typescript": "^4.3.5"
+    }
+}
