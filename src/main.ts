@@ -1,17 +1,33 @@
-import { Plugin } from 'obsidian';
+import { Plugin, MarkdownView  } from 'obsidian';
 
 export default class MermaidPopupPlugin extends Plugin {
     async onload() {
         console.log('Loading Mermaid Popup Plugin');
-        this.registerMermaidPopup();
+
+        this.registerMarkdownPostProcessor((element, context) => {
+            this.registerMermaidPopup(element);
+          });
+      
+        // 监听模式切换事件
+        this.registerEvent(this.app.workspace.on('layout-change', () => {
+        const activeLeaf = this.app.workspace.activeLeaf;
+        if (activeLeaf) {
+            const view = activeLeaf.view;
+            if (view && view.getViewType() === 'markdown') {
+                // 类型断言为 MarkdownView，以便访问 contentEl
+                const markdownView = view as MarkdownView;
+                this.registerMermaidPopup(markdownView.contentEl);                
+            }
+        }
+        }));
     }
 
     onunload() {
         console.log('Unloading Mermaid Popup Plugin');
     }
 
-    registerMermaidPopup() {
-        this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
+    registerMermaidPopup(ele: HTMLElement) {
+        this.registerDomEvent(ele, 'click', (evt: MouseEvent) => {
             const target = evt.target as HTMLElement;
             const mermaidDiv = target.closest('.mermaid') as HTMLElement;
             if (mermaidDiv) {
@@ -28,45 +44,45 @@ export default class MermaidPopupPlugin extends Plugin {
         const svgWidth = svgElement.viewBox.baseVal.width;
         const svgHeight = svgElement.viewBox.baseVal.height;
 
-        const overlay = document.createElement('div');
+        const overlay = svgElement.doc.createElement('div');
         overlay.classList.add('popup-overlay');
 
-        const popup = document.createElement('div');
+        const popup = svgElement.doc.createElement('div');
         popup.classList.add('popup-content', 'draggable', 'resizable');
         popup.innerHTML = svgContent;
 
         // Create a container for the control buttons
-        const buttonContainer = document.createElement('div');
+        const buttonContainer = svgElement.doc.createElement('div');
         buttonContainer.classList.add('button-container');
 
         // Create zoom in and zoom out buttons
-        const zoomInButton = document.createElement('button');
+        const zoomInButton = svgElement.doc.createElement('button');
         zoomInButton.classList.add('control-button', 'zoom-in');
         zoomInButton.textContent = '+';
 
-        const zoomOutButton = document.createElement('button');
+        const zoomOutButton = svgElement.doc.createElement('button');
         zoomOutButton.classList.add('control-button', 'zoom-out');
         zoomOutButton.textContent = '-';
 
         // Create arrow buttons
-        const upButton = document.createElement('button');
+        const upButton = svgElement.doc.createElement('button');
         upButton.classList.add('control-button', 'arrow-up');
         upButton.textContent = '↑';
 
-        const downButton = document.createElement('button');
+        const downButton = svgElement.doc.createElement('button');
         downButton.classList.add('control-button', 'arrow-down');
         downButton.textContent = '↓';
 
-        const leftButton = document.createElement('button');
+        const leftButton = svgElement.doc.createElement('button');
         leftButton.classList.add('control-button', 'arrow-left');
         leftButton.textContent = '←';
 
-        const rightButton = document.createElement('button');
+        const rightButton = svgElement.doc.createElement('button');
         rightButton.classList.add('control-button', 'arrow-right');
         rightButton.textContent = '→';
 
         // Create a close button
-        const closeButton = document.createElement('button');
+        const closeButton = svgElement.doc.createElement('button');
         closeButton.classList.add('control-button', 'close-popup');
         closeButton.textContent = 'X';
 
@@ -82,14 +98,14 @@ export default class MermaidPopupPlugin extends Plugin {
         // Append popup and button container to the overlay
         overlay.appendChild(popup);
         overlay.appendChild(buttonContainer);
-        document.body.appendChild(overlay);
+        svgElement.doc.body.appendChild(overlay);
 
         // Adjust SVG size to fit the popup-content
         this.adjustSvgSize(popup.querySelector('svg') as SVGSVGElement, popup);
 
         // Close popup on overlay click
-        overlay.addEventListener('click', () => {
-            document.body.removeChild(overlay);
+        overlay.addEventListener('click', (evt) => {
+            evt.doc.body.removeChild(overlay);
         });
 
         // Stop propagation to prevent closing when clicking on popup content
@@ -134,7 +150,7 @@ export default class MermaidPopupPlugin extends Plugin {
 
         closeButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            document.body.removeChild(overlay);
+            evt.doc.body.removeChild(overlay);
         });
 
         // Make the popup draggable
@@ -143,9 +159,11 @@ export default class MermaidPopupPlugin extends Plugin {
         // Make the popup resizable
         popup.classList.add('resizable');
 
+        console.log('Popup position before:', popup.style.transform, popup.getBoundingClientRect());
         // Initialize popup position if not already set
         if (!popup.style.transform) {
             popup.style.transform = 'translate(0px, 0px)';
+            console.log('Popup position:', popup.style.transform, popup.getBoundingClientRect());
         }
 
         // Add mouse wheel event for zooming
@@ -158,7 +176,7 @@ export default class MermaidPopupPlugin extends Plugin {
 
     // Helper method to move the popup
     movePopup(popup: HTMLElement, dx: number, dy: number) {
-        const style = window.getComputedStyle(popup);
+        const style = popup.win.getComputedStyle(popup);
         const matrix = style.transform === 'none' ? new DOMMatrix() : new DOMMatrixReadOnly(style.transform);
 
         // Calculate new position
@@ -170,7 +188,7 @@ export default class MermaidPopupPlugin extends Plugin {
 
     // Helper method to zoom the popup and SVG
     zoomPopup(popup: HTMLElement, scale: number, overlay: HTMLElement) {
-        const style = window.getComputedStyle(popup);
+        const style = popup.win.getComputedStyle(popup);
         const matrix = style.transform === 'none' ? new DOMMatrix() : new DOMMatrixReadOnly(style.transform);
         const currentScale = matrix.a;
         const newScale = currentScale * scale;
@@ -199,7 +217,7 @@ export default class MermaidPopupPlugin extends Plugin {
 
     // Helper method to zoom the popup at the cursor position
     zoomPopupAtCursor(popup: HTMLElement, scale: number, overlay: HTMLElement, evt: WheelEvent) {
-        const style = window.getComputedStyle(popup);
+        const style = popup.win.getComputedStyle(popup);
         const matrix = style.transform === 'none' ? new DOMMatrix() : new DOMMatrixReadOnly(style.transform);
         const currentScale = matrix.a;
         const newScale = currentScale * scale;
@@ -265,18 +283,23 @@ export default class MermaidPopupPlugin extends Plugin {
 
         const mouseDownHandler = (e: MouseEvent) => {
             isDragging = true;
-            const style = window.getComputedStyle(element);
+            if (!e.target)
+                return;
+            const ele_target = e.target as HTMLElement;
+            const style = ele_target.win.getComputedStyle(element);
             const matrix = style.transform === 'none' ? new DOMMatrix() : new DOMMatrixReadOnly(style.transform);
             startX = e.clientX - matrix.m41;
             startY = e.clientY - matrix.m42;
-            document.addEventListener('mousemove', mouseMoveHandler);
-            document.addEventListener('mouseup', mouseUpHandler);
+            e.doc.addEventListener('mousemove', mouseMoveHandler);
+            e.doc.addEventListener('mouseup', mouseUpHandler);
         };
 
         const mouseMoveHandler = (e: MouseEvent) => {
             if (!isDragging) return;
-
-            const style = window.getComputedStyle(element);
+            if (!e.target)
+                return;
+            const ele_target = e.target as HTMLElement;
+            const style = ele_target.win.getComputedStyle(element);
             const matrix = style.transform === 'none' ? new DOMMatrix() : new DOMMatrixReadOnly(style.transform);
 
             // 直接计算当前鼠标位置与起始位置的差值
@@ -286,10 +309,10 @@ export default class MermaidPopupPlugin extends Plugin {
             element.style.transform = `translate(${initialX}px, ${initialY}px) scale(${matrix.a})`;
         };
 
-        const mouseUpHandler = () => {
+        const mouseUpHandler = (e: MouseEvent) => {
             isDragging = false;
-            document.removeEventListener('mousemove', mouseMoveHandler);
-            document.removeEventListener('mouseup', mouseUpHandler);
+            e.doc.removeEventListener('mousemove', mouseMoveHandler);
+            e.doc.removeEventListener('mouseup', mouseUpHandler);
         };
 
         element.addEventListener('mousedown', mouseDownHandler);
