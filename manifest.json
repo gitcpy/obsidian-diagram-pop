@@ -1,7 +1,7 @@
 {
     "id": "mermaid-popup",
     "name": "Mermaid Popup",
-    "version": "0.1.6",
+    "version": "0.1.15",
     "minAppVersion": "0.12.0",
     "description": "Show mermaid diagrams in a draggable and zoomable popup",
     "author": "ChenPengyuan",
