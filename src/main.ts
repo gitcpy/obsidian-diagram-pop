@@ -159,11 +159,12 @@ export default class MermaidPopupPlugin extends Plugin {
         // Make the popup resizable
         popup.classList.add('resizable');
 
-        console.log('Popup position before:', popup.style.transform, popup.getBoundingClientRect());
+        const popup_style = popup.win.getComputedStyle(popup);
+        //console.log('Popup position before:', popup_style.transform, popup.getBoundingClientRect());
         // Initialize popup position if not already set
-        if (!popup.style.transform) {
-            popup.style.transform = 'translate(0px, 0px)';
-            console.log('Popup position:', popup.style.transform, popup.getBoundingClientRect());
+        if (!popup_style.transform) {
+            popup_style.transform = 'translate(0px, 0px)';
+            //console.log('Popup position:', popup_style.transform, popup.getBoundingClientRect());
         }
 
         // Add mouse wheel event for zooming
@@ -183,7 +184,7 @@ export default class MermaidPopupPlugin extends Plugin {
         const newX = matrix.m41 + dx;
         const newY = matrix.m42 + dy;
 
-        popup.style.transform = `translate(${newX}px, ${newY}px) scale(${matrix.a})`;
+        popup.setCssStyles({transform : `translate(${newX}px, ${newY}px) scale(${matrix.a})`});
     }
 
     // Helper method to zoom the popup and SVG
@@ -211,8 +212,10 @@ export default class MermaidPopupPlugin extends Plugin {
         const newX = matrix.m41 + offsetX * (1 - scale);
         const newY = matrix.m42 + offsetY * (1 - scale);
 
-        popup.style.transformOrigin = 'center center'; // Ensure scaling is centered
-        popup.style.transform = `translate(${newX}px, ${newY}px) scale(${newScale})`;
+        popup.setCssStyles({
+            transformOrigin : 'center center', // Ensure scaling is centered
+            transform : `translate(${newX}px, ${newY}px) scale(${newScale})`
+        });
     }
 
     // Helper method to zoom the popup at the cursor position
@@ -240,8 +243,10 @@ export default class MermaidPopupPlugin extends Plugin {
         const newX = matrix.m41 - offsetX * (scale - 1);
         const newY = matrix.m42 - offsetY * (scale - 1);
 
-        popup.style.transformOrigin = 'center center'; // Ensure scaling is centered
-        popup.style.transform = `translate(${newX}px, ${newY}px) scale(${newScale})`;
+        popup.setCssStyles({
+            transformOrigin : 'center center', // Ensure scaling is centered
+            transform : `translate(${newX}px, ${newY}px) scale(${newScale})`
+        });
     }
 
     // Helper method to adjust SVG size to fit the popup
@@ -259,18 +264,18 @@ export default class MermaidPopupPlugin extends Plugin {
         let scale = Math.min(scaleX, scaleY);
 
         if (scale < 1) {
-            svgElement.style.width = `${svgWidth * scale}px`;
-            svgElement.style.height = `${svgHeight * scale}px`;
+            svgElement.setCssStyles({width : `${svgWidth * scale}px`, height : `${svgHeight * scale}px`});
         } else {
-            svgElement.style.width = '100%';
-            svgElement.style.height = '100%';
+            svgElement.setCssStyles({width : '100%', height : '100%'});
         }
 
-        svgElement.style.transformOrigin = 'center center'; // Center transform origin
-        svgElement.style.position = 'absolute';
-        svgElement.style.top = '50%';
-        svgElement.style.left = '50%';
-        svgElement.style.transform = 'translate(-50%, -50%)';
+        svgElement.setCssStyles({
+            transformOrigin : 'center center', // Center transform origin
+            position : 'absolute',
+            top : '50%',
+            left : '50%',
+            transform : 'translate(-50%, -50%)'
+        });
     }
 
     // Helper method to make the popup draggable
@@ -306,7 +311,7 @@ export default class MermaidPopupPlugin extends Plugin {
             initialX = e.clientX - startX;
             initialY = e.clientY - startY;
 
-            element.style.transform = `translate(${initialX}px, ${initialY}px) scale(${matrix.a})`;
+            element.setCssStyles({transform : `translate(${initialX}px, ${initialY}px) scale(${matrix.a})`});
         };
 
         const mouseUpHandler = (e: MouseEvent) => {
