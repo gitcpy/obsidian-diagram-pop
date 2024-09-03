@@ -10,16 +10,12 @@ export default class MermaidPopupPlugin extends Plugin {
       
         // 监听模式切换事件
         this.registerEvent(this.app.workspace.on('layout-change', () => {
-        const activeLeaf = this.app.workspace.activeLeaf;
-        if (activeLeaf) {
-            const view = activeLeaf.view;
-            if (view && view.getViewType() === 'markdown') {
-                // 类型断言为 MarkdownView，以便访问 contentEl
-                const markdownView = view as MarkdownView;
-                this.registerMermaidPopup(markdownView.contentEl);                
-            }
-        }
-        }));
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (view && view.getViewType() === 'markdown') {
+            // 类型断言为 MarkdownView，以便访问 contentEl
+            const markdownView = view as MarkdownView;
+            this.registerMermaidPopup(markdownView.contentEl);                
+        }}));
     }
 
     onunload() {
@@ -40,16 +36,12 @@ export default class MermaidPopupPlugin extends Plugin {
     }
 
     openPopup(svgElement: SVGSVGElement) {
-        const svgContent = svgElement.outerHTML;
-        const svgWidth = svgElement.viewBox.baseVal.width;
-        const svgHeight = svgElement.viewBox.baseVal.height;
-
         const overlay = svgElement.doc.createElement('div');
         overlay.classList.add('popup-overlay');
 
         const popup = svgElement.doc.createElement('div');
         popup.classList.add('popup-content', 'draggable', 'resizable');
-        popup.innerHTML = svgContent;
+        popup.appendChild(svgElement.cloneNode(true));
 
         // Create a container for the control buttons
         const buttonContainer = svgElement.doc.createElement('div');
