@@ -10,7 +10,6 @@
     align-items: center;
     z-index: 1000; /* Ensure the overlay is on top */
 }
-
 .popup-content {
     position: relative;
     overflow: hidden;
@@ -23,12 +22,10 @@
     transform-origin: center; /* Ensure scaling is centered */
     z-index: 1001; /* Ensure the content is on top of the overlay */
 }
-
 .popup-content svg {
     display: block;
     margin: auto;
 }
-
 .button-container {
     position: absolute;
     bottom: 50px; /* Adjusted for desired position */
@@ -43,7 +40,6 @@
     backdrop-filter: blur(5px); /* Background semi-blur */
     z-index: 1002; /* Ensure the button container is on top of the content */
 }
-
 .control-button {
     background: rgba(255, 255, 255, 0.7); /* Semi-transparent background */
     border: 1px solid #ccc;
@@ -53,11 +49,9 @@
     font-size: 16px;
     color: rgb(0 0 0 / 52%); /* Correct color */
 }
-
 .control-button:hover {
     background: rgba(255, 255, 255, 0.9);
 }
-
 .arrow-up, .arrow-down, .arrow-left, .arrow-right, .zoom-in, .zoom-out, .close-popup {
     width: 30px;
     height: 30px;
@@ -66,18 +60,38 @@
     align-items: center;
 }
 
-/* Light mode */
-:root {
-    --popup-background: white;
+/* 浅色模式下的弹窗背景 */
+body.theme-light .popup-content {
+    background-color: #ffffff; /* 白色背景 */
+    color: #000000; /* 黑色文本 */
+  }
+
+  /* 深色模式下的弹窗背景 */
+  body.theme-dark .popup-content {
+    background-color: #333333; /* 深灰色背景 */
+    color: #ffffff; /* 白色文本 */
+  }
+
+.mermaid {
+    display: flex;
+    justify-content: center;
+
 }
 
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --popup-background: #333;
-    }
+.mermaid svg {
+    width: auto;
+    height: auto;
+    max-height: 100%;
 }
 
 .control-button {
     color: var(--text-normal)
+}
+
+.popup-content {
+    cursor: pointer; /* 悬停时鼠标变为手掌 */
+  }
+  
+.popup-content.dragging {
+cursor: grabbing; /* 拖动时鼠标变为抓手 */
 }
