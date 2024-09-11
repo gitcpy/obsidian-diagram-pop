@@ -5,17 +5,27 @@ export default class MermaidPopupPlugin extends Plugin {
         console.log('Loading Mermaid Popup Plugin');
 
         this.registerMarkdownPostProcessor((element, context) => {
-            this.registerMermaidPopup(element);
-          });
+            // 确保每次只绑定一次事件
+            if (!element.hasAttribute('data-mermaid-popup-bound')) {
+                this.registerMermaidPopup(element);
+                element.setAttribute('data-mermaid-popup-bound', 'true');
+            }
+        });
       
         // 监听模式切换事件
         this.registerEvent(this.app.workspace.on('layout-change', () => {
-        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (view && view.getViewType() === 'markdown') {
-            // 类型断言为 MarkdownView，以便访问 contentEl
-            const markdownView = view as MarkdownView;
-            this.registerMermaidPopup(markdownView.contentEl);                
-        }}));
+            const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+            if (view && view.getViewType() === 'markdown') {
+                // 类型断言为 MarkdownView，以便访问 contentEl
+                const markdownView = view as MarkdownView;
+
+                // 确保每次只绑定一次事件
+                if (!markdownView.contentEl.hasAttribute('data-mermaid-popup-bound')) {
+                    this.registerMermaidPopup(markdownView.contentEl);
+                    markdownView.contentEl.setAttribute('data-mermaid-popup-bound', 'true');
+                }
+            }
+        }));
     }
 
     onunload() {
@@ -23,17 +33,25 @@ export default class MermaidPopupPlugin extends Plugin {
     }
 
     registerMermaidPopup(ele: HTMLElement) {
-        this.registerDomEvent(ele, 'click', (evt: MouseEvent) => {
-            const target = evt.target as HTMLElement;
-            const mermaidDiv = target.closest('.mermaid') as HTMLElement;
-            if (mermaidDiv) {
-                const svg = mermaidDiv.querySelector('svg');
-                if (svg) {
-                    this.openPopup(svg as SVGSVGElement);
-                }
-            }
-        });
+        // 移除之前可能绑定的事件，防止多次绑定
+        ele.removeEventListener('click', this.handleMermaidClick);
+
+
+
+        this.registerDomEvent(ele, 'click', this.handleMermaidClick);
     }
+
+    // 绑定新的事件处理
+    handleMermaidClick = (evt: MouseEvent) => {
+        const target = evt.target as HTMLElement;
+        const mermaidDiv = target.closest('.mermaid') as HTMLElement;
+        if (mermaidDiv) {
+            const svg = mermaidDiv.querySelector('svg');
+            if (svg) {
+                this.openPopup(svg as SVGSVGElement);
+            }
+        }
+    };
 
     openPopup(svgElement: SVGSVGElement) {
         const overlay = svgElement.doc.createElement('div');
