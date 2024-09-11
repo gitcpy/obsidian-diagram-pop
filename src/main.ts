@@ -307,6 +307,7 @@ export default class MermaidPopupPlugin extends Plugin {
             startY = e.clientY - matrix.m42;
             e.doc.addEventListener('mousemove', mouseMoveHandler);
             e.doc.addEventListener('mouseup', mouseUpHandler);
+            ele_target.closest('.popup-content')?.classList.add('dragging');
         };
 
         const mouseMoveHandler = (e: MouseEvent) => {
@@ -328,6 +329,9 @@ export default class MermaidPopupPlugin extends Plugin {
             isDragging = false;
             e.doc.removeEventListener('mousemove', mouseMoveHandler);
             e.doc.removeEventListener('mouseup', mouseUpHandler);
+
+            const ele_target = e.target as HTMLElement;
+            ele_target.closest('.popup-content')?.classList.remove('dragging');
         };
 
         element.addEventListener('mousedown', mouseDownHandler);
