@@ -1,5 +1,9 @@
 A plugin for obsidian. Show mermaid diagrams in a draggable and zoomable popup. 
 
+Demo:
+
+![](https://github.com/gitcpy/obsidian-mermaid-pop/blob/main/gifs/mermaid-popup-demo.gif)
+
 You could get it from the BRAT plugin which you could download from the comunity plugins in obsidian. 
 
 Other ways to be added...
