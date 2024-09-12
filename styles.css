@@ -73,9 +73,8 @@ body.theme-light .popup-content {
   }
 
 .mermaid {
-    display: flex;
+    display: block;
     justify-content: center;
-
 }
 
 .mermaid svg {
