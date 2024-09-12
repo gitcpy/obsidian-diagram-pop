@@ -43,6 +43,8 @@ export default class MermaidPopupPlugin extends Plugin {
 
     // 绑定新的事件处理
     handleMermaidClick = (evt: MouseEvent) => {
+        if (!evt.ctrlKey) return;
+
         const target = evt.target as HTMLElement;
         const mermaidDiv = target.closest('.mermaid') as HTMLElement;
         if (mermaidDiv) {
