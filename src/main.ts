@@ -165,6 +165,13 @@ export default class MermaidPopupPlugin extends Plugin {
             evt.doc.body.removeChild(overlay);
         });
 
+        // Listen for the Escape key to close the popup
+        popup.doc.addEventListener('keydown', (evt) => {
+            if (evt.key === 'Escape') {
+                svgElement.doc.body.removeChild(overlay);
+            }
+        });        
+
         // Make the popup draggable
         this.makeDraggable(popup);
 
