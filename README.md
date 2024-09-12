@@ -20,6 +20,8 @@ Usage:
 
   Open a markdown file, if click a mermaid diagram if exits, there is a mermaid popup will display.
 
+  Open the popup with ctrl+left click  
+
   It is easy to manipulate the popup. 
 
   7 ui keys as follow:
