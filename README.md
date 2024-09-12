@@ -18,9 +18,7 @@ Click "Add Plugin", A fews seconds later, the installing will be completed.
 
 Usage:
 
-  Open a markdown file, if click a mermaid diagram if exits, there is a mermaid popup will display.
-
-  Open the popup with ctrl+left click  
+  If there is any mermaid diagram in the markdown file, open the popup up with ctrl+left click.
 
   It is easy to manipulate the popup. 
 
