@@ -70,7 +70,9 @@ export default class MermaidPopupPlugin extends Plugin {
         popupButton.title = 'Open Popup';
 
         // Append the button to the Mermaid diagram container
-        mermaidDiv.style.position = 'relative'; // Ensure the diagram has relative positioning for the button
+        mermaidDiv.setCssStyles({
+            position : 'relative' // Ensure the diagram has relative positioning for the button
+        });
         mermaidDiv.appendChild(popupButton);
 
         let isDragging = false;
@@ -109,8 +111,10 @@ export default class MermaidPopupPlugin extends Plugin {
             //button = 0;
 
             // 初始化按钮样式位置偏移量
-            button.style.left = button.offsetLeft + "px";
-            button.style.top = button.offsetTop + "px";
+            button.setCssStyles({
+                left: button.offsetLeft + "px",
+                top: button.offsetTop + "px"
+            });
 
             let hasMoved = false; // 标记是否发生了移动
 
@@ -130,17 +134,26 @@ export default class MermaidPopupPlugin extends Plugin {
                 //     button.getBoundingClientRect().left, button.getBoundingClientRect().top,
                 // button.style.left, button.style.top);
 
-                // Set the element's new position
-                //if (Math.abs(posX) > 3 || Math.abs(posY) > 3) {
-                    hasMoved = true;
-                    onDragStart(); // 标记为拖动
-                //}
+                hasMoved = true;
+                onDragStart(); // 标记为拖动
 
+                let btn_posX = button.offsetLeft - posX;
+                let btn_posY = button.offsetTop - posY;
+                btn_posX = btn_posX < 0 ? 0 : btn_posX;
+                btn_posX = button.parentElement ?
+                    ((btn_posX + button.offsetWidth) > button.parentElement?.offsetWidth ? button.offsetLeft : btn_posX)
+                    :btn_posX;
+                btn_posY = btn_posY < 0 ? 0 : btn_posY;
+                btn_posY = button.parentElement ?
+                    ((btn_posY + button.offsetHeight) > button.parentElement?.offsetHeight ? button.offsetTop : btn_posY)
+                    :btn_posY;                
                 // Set the element's new position
-                button.style.bottom = 'auto';
-                button.style.right = 'auto';
-                button.style.top = (button.offsetTop - posY) + 'px';
-                button.style.left = (button.offsetLeft - posX) + 'px';
+                button.setCssStyles({
+                    bottom: 'auto',
+                    right: 'auto',
+                    left: btn_posX  + "px",
+                    top: btn_posY+ "px"
+                });                
             };
     
             // Stop moving when mouse is released
@@ -149,6 +162,8 @@ export default class MermaidPopupPlugin extends Plugin {
                 button.doc.onmouseup = null;
             };
         };
+
+
     }   
     
     GetPosButtonToMermaid(eleBtn: HTMLElement, eleDiv: HTMLElement){
