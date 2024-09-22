@@ -94,3 +94,20 @@ body.theme-light .popup-content {
 .popup-content.dragging {
 cursor: grabbing; /* 拖动时鼠标变为抓手 */
 }
+
+button.mermaid-popup-button {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.1); /* 半透明 */
+    color: var(--text-normal);
+    border: none;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: move; /* 鼠标显示为拖动图标 */
+    z-index: 10;
+}
+button.mermaid-popup-button:hover {
+    background-color: rgba(0, 0, 0, 0.5); /* 鼠标悬停时颜色变化 */
+    cursor: pointer;
+}
