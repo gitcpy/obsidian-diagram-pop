@@ -1,15 +1,11 @@
-import { Plugin, MarkdownView  } from 'obsidian';
+import { Plugin, MarkdownView, setIcon  } from 'obsidian';
 
 export default class MermaidPopupPlugin extends Plugin {
     async onload() {
         console.log('Loading Mermaid Popup Plugin');
 
         this.registerMarkdownPostProcessor((element, context) => {
-            // 确保每次只绑定一次事件
-            if (!element.hasAttribute('data-mermaid-popup-bound')) {
-                this.registerMermaidPopup(element);
-                element.setAttribute('data-mermaid-popup-bound', 'true');
-            }
+            this.doRegisterMermaidPopup(element);
         });
       
         // 监听模式切换事件
@@ -18,12 +14,7 @@ export default class MermaidPopupPlugin extends Plugin {
             if (view && view.getViewType() === 'markdown') {
                 // 类型断言为 MarkdownView，以便访问 contentEl
                 const markdownView = view as MarkdownView;
-
-                // 确保每次只绑定一次事件
-                if (!markdownView.contentEl.hasAttribute('data-mermaid-popup-bound')) {
-                    this.registerMermaidPopup(markdownView.contentEl);
-                    markdownView.contentEl.setAttribute('data-mermaid-popup-bound', 'true');
-                }
+                this.doRegisterMermaidPopup(markdownView.contentEl);
             }
         }));
     }
@@ -32,13 +23,143 @@ export default class MermaidPopupPlugin extends Plugin {
         console.log('Unloading Mermaid Popup Plugin');
     }
 
-    registerMermaidPopup(ele: HTMLElement) {
+    // 确保每次只绑定一次事件
+    doRegisterMermaidPopup(myView: HTMLElement){
+        if (!myView.hasAttribute('data-mermaid-popup-bound')) {
+            this.registerMermaidPopup(myView);
+            myView.setAttribute('data-mermaid-popup-bound', 'true');
+        }       
+    }
+
+    registerMermaidPopup(myView: HTMLElement) {
         // 移除之前可能绑定的事件，防止多次绑定
-        ele.removeEventListener('click', this.handleMermaidClick);
+        myView.removeEventListener('click', this.handleMermaidClick);
 
+        this.ObserveToAddPopupButton(myView);
 
+        this.registerDomEvent(myView, 'click', this.handleMermaidClick);
+    }
 
-        this.registerDomEvent(ele, 'click', this.handleMermaidClick);
+    ObserveToAddPopupButton(myView: HTMLElement){
+        const observer = new MutationObserver((mutationsList, observer) => {
+            this.doAddPopupButton(myView);
+        });
+
+        observer.observe(myView, { childList: true, subtree: true });
+        this.doAddPopupButton(myView);
+    }
+
+    doAddPopupButton(myView: HTMLElement){
+        // Find Mermaid diagrams and append a button to each
+        const mermaidDivs = myView.querySelectorAll('.mermaid');
+        mermaidDivs.forEach((mermaidDiv) => {
+            this.addPopupButton(mermaidDiv as HTMLElement, myView);
+        });
+    }
+
+    // Add a button to each Mermaid diagram for triggering the popup
+    addPopupButton(mermaidDiv: HTMLElement, myView: HTMLElement) {
+        // Ensure the button is only added once
+        if (mermaidDiv.querySelector('.mermaid-popup-button')) return;
+    
+        // Create the popup button
+        const popupButton = mermaidDiv.doc.createElement('button');
+        popupButton.classList.add('mermaid-popup-button');
+        popupButton.textContent = 'Open Popup';
+        setIcon(popupButton, 'maximize');
+        popupButton.title = 'Open Popup';
+
+        // Append the button to the Mermaid diagram container
+        mermaidDiv.style.position = 'relative'; // Ensure the diagram has relative positioning for the button
+        mermaidDiv.appendChild(popupButton);
+
+        let isDragging = false;
+
+        // Add click event listener for the button to open the popup
+        popupButton.addEventListener('click', (evt) => {
+            // Only trigger popup if no dragging occurred
+            if (!isDragging) {
+                evt.stopPropagation(); // Prevent triggering any other click events
+                const svg = mermaidDiv.querySelector('svg');
+                if (svg) {
+                    this.openPopup(svg as SVGSVGElement);
+                }
+            }
+            // Reset the dragging flag after click
+            isDragging = false;
+        });
+    
+        // Make the button draggable
+        this.makeButtonDraggable(popupButton, mermaidDiv, myView, () => {
+            isDragging = true; // Set dragging to true during the drag
+        });
+    }
+
+    makeButtonDraggable(button: HTMLElement, mermaidDiv: HTMLElement, myView: HTMLElement, onDragStart: () => void) {
+        // posX, posY, 移动步长
+        let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
+    
+        button.onmousedown = (e) => {
+            e.preventDefault();
+    
+            // Get the mouse cursor position at startup
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            //button = 0;
+
+            // 初始化按钮样式位置偏移量
+            button.style.left = button.offsetLeft + "px";
+            button.style.top = button.offsetTop + "px";
+
+            let hasMoved = false; // 标记是否发生了移动
+
+            // Call function when mouse is moved
+            button.doc.onmousemove = (e) => {
+                e.preventDefault();
+    
+                // Calculate the new cursor position
+                posX = mouseX - e.clientX;
+                posY = mouseY - e.clientY;
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+
+                // console.log("mX,mY,bL,bT, bcL, bcT, sL, sT\n", 
+                //     mouseX,mouseY, 
+                //     button.offsetLeft,button.offsetTop, 
+                //     button.getBoundingClientRect().left, button.getBoundingClientRect().top,
+                // button.style.left, button.style.top);
+
+                // Set the element's new position
+                //if (Math.abs(posX) > 3 || Math.abs(posY) > 3) {
+                    hasMoved = true;
+                    onDragStart(); // 标记为拖动
+                //}
+
+                // Set the element's new position
+                button.style.bottom = 'auto';
+                button.style.right = 'auto';
+                button.style.top = (button.offsetTop - posY) + 'px';
+                button.style.left = (button.offsetLeft - posX) + 'px';
+            };
+    
+            // Stop moving when mouse is released
+            button.doc.onmouseup = () => {
+                button.doc.onmousemove = null;
+                button.doc.onmouseup = null;
+            };
+        };
+    }   
+    
+    GetPosButtonToMermaid(eleBtn: HTMLElement, eleDiv: HTMLElement){
+        // 获取按钮和 div 的位置信息
+        const divRect = eleDiv.getBoundingClientRect();
+        const buttonRect = eleBtn.getBoundingClientRect();
+
+        // 计算按钮相对于 div 的位置
+        const buttonRelativeTop = buttonRect.top - divRect.top;
+        const buttonRelativeLeft = buttonRect.left - divRect.left;
+        return { top: buttonRelativeTop, left:buttonRelativeLeft};
     }
 
     // 绑定新的事件处理
