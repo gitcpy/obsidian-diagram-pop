@@ -130,7 +130,7 @@ button.mermaid-popup-button {
     padding: 5px;
     border-radius: 4px;
     cursor: move; /* 鼠标显示为拖动图标 */
-    z-index: 10;
+    z-index: 9999;
 }
 button.mermaid-popup-button:hover {
     background-color: rgba(0, 0, 0, 0.5); /* 鼠标悬停时颜色变化 */
