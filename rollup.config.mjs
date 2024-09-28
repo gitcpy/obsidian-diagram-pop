@@ -28,7 +28,7 @@ const baseConfig = {
 const developmentConfig = {
     ...baseConfig,
     output: {
-        dir: 'test-run/.obsidian/plugins/obsidian-mermaid-popup',
+        dir: 'test-run/.obsidian/plugins/obsidian-diagram-popup',
         sourcemap: false,
         format: 'cjs',
         exports: 'auto',
@@ -39,15 +39,15 @@ const developmentConfig = {
             targets: [
                 {
                     src: './styles.css',
-                    dest: 'test-run/.obsidian/plugins/obsidian-mermaid-popup/',
+                    dest: 'test-run/.obsidian/plugins/obsidian-diagram-popup/',
                 },
                 {
                     src: './manifest.json',
-                    dest: 'test-run/.obsidian/plugins/obsidian-mermaid-popup/',
+                    dest: 'test-run/.obsidian/plugins/obsidian-diagram-popup/',
                 },
                 // {
                 //     src: './.hotreload',
-                //     dest: 'test-run/.obsidian/plugins/Diagram Zoom Drag/',
+                //     dest: 'test-run/.obsidian/plugins/obsidian-diagram-popup/',
                 // },
             ],
         }),
