@@ -4,10 +4,24 @@
     "description": "Show mermaid diagrams in a draggable and resizable popup",
     "main": "main.js",
     "scripts": {
-        "build": "tsc"
+        "dev": "npx rollup -c rollup.config.mjs -w --environment PRODUCTION:0",
+        "build": "npx rollup -c rollup.config.mjs --environment PRODUCTION:1",
+        "lint": "npx eslint src --ext .ts",
+        "rollup": "npx rollup"
     },
     "devDependencies": {
+        "@rollup/plugin-commonjs": "^28.0.0",
+        "@rollup/plugin-json": "^6.1.0",
+        "@rollup/plugin-node-resolve": "^15.3.0",
+        "@rollup/plugin-replace": "^6.0.1",
+        "@rollup/plugin-terser": "^0.4.4",
+        "@rollup/plugin-typescript": "^12.1.0",
         "obsidian": "latest",
+        "rollup-plugin-copy": "^3.5.0",
+        "rollup-plugin-visualizer": "^5.12.0",
         "typescript": "^4.3.5"
+    },
+    "dependencies": {
+        "tslib": "^2.7.0"
     }
 }
