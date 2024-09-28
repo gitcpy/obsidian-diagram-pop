@@ -495,7 +495,7 @@ export default class MermaidPopupPlugin extends Plugin {
         const offsetX = evt.clientX - popupCenterX;
         const offsetY = evt.clientY - popupCenterY;
 
-        this.zoomPopupCore(popup, isOut, offsetX, offsetY);
+        this.zoomPopupCore(popup, !isOut, offsetX, offsetY);
     }
 
     // Helper method to zoom the popup and SVG
