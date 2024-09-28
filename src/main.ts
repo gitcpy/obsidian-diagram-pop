@@ -1,79 +1,200 @@
 import { Plugin, MarkdownView, setIcon  } from 'obsidian';
+import MermaidPopupSettingTab from './settings';
+
+interface MermaidPopupSetting {
+    kvMap: Record<string, string>;
+    kvMapDefault: Record<string, string>;
+    kvMapReserved: Record<string, string>;
+
+    ZoomRatioValue:string;
+    kvMapZoomRatio: Record<string, string>;
+    MoveStepValue:string;
+    kvMapMoveStep: Record<string, string>;
+};
+
+const DEFAULT_SETTINGS: MermaidPopupSetting = {
+    kvMap: {},
+    kvMapDefault: {
+        'Mermaid':'.mermaid'
+    },
+    kvMapReserved:{
+        'Reserved': '.diagram-popup'
+    },
+    ZoomRatioValue:'0.1',
+    kvMapZoomRatio:{
+        '0.1':'0.1',
+        '0.2':'0.2',
+        '0.3':'0.3'
+    },
+    MoveStepValue:'30',
+    kvMapMoveStep:{
+        '20':'20',
+        '30':'30',
+        '40':'40',
+        '50':'60',
+        '60':'60',
+    },    
+};
 
 export default class MermaidPopupPlugin extends Plugin {
+    settings!: MermaidPopupSetting;
+
     async onload() {
-        console.log('Loading Mermaid Popup Plugin');
+        console.log('Loading Mermaid Popup Plugin ' + this.manifest.version);
+
+        // 加载设置
+        await this.loadSettings();
+
+        // 添加设置页面
+        this.addSettingTab(new MermaidPopupSettingTab(this.app, this));
 
         this.registerMarkdownPostProcessor((element, context) => {
-            this.doRegisterMermaidPopup(element);
+            this.registerMarkdownPostProcessor_MermaidPopup(element);
         });
       
         // 监听模式切换事件
         this.registerEvent(this.app.workspace.on('layout-change', () => {
-            const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+            let view = this.app.workspace.getActiveViewOfType(MarkdownView);
             if (view && view.getViewType() === 'markdown') {
                 // 类型断言为 MarkdownView，以便访问 contentEl
-                const markdownView = view as MarkdownView;
-                this.doRegisterMermaidPopup(markdownView.contentEl);
+                const mode = view.getMode();
+                if (mode === 'preview') {
+                    let container = view.containerEl.childNodes[1].childNodes[1] as HTMLElement; // 阅读容器
+                    this.ObserveToAddPopupButton_in_Preview(container, true)
+                }
+                else{
+                    let container = view.containerEl.childNodes[1].childNodes[0] as HTMLElement; // 编辑容器
+                    this.ObserveToAddPopupButton(container)
+                }
             }
         }));
     }
 
     onunload() {
-        console.log('Unloading Mermaid Popup Plugin');
+        console.log('Unloading Mermaid Popup Plugin ' + this.manifest.version);
     }
 
-    // 确保每次只绑定一次事件
-    doRegisterMermaidPopup(myView: HTMLElement){
-        if (!myView.hasAttribute('data-mermaid-popup-bound')) {
-            this.registerMermaidPopup(myView);
-            myView.setAttribute('data-mermaid-popup-bound', 'true');
-        }       
+    async loadSettings() {
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
     }
 
+    async saveSettings() {
+        await this.saveData(this.settings);
+    }  
+
+    isPreviewMode(){
+        let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        let mode = view?.getViewType();
+        return mode == "preview";
+    }
+
+    // 渲染直接生成，可直接判断添加按钮和弹窗事件
+    registerMarkdownPostProcessor_MermaidPopup(ele: HTMLElement){
+        let closestElement = this.GetSettingsClassElementClosest(ele);
+        if (!closestElement)
+            return;
+        if (!closestElement.hasAttribute('data-mermaid-popup-bound')) {
+            this.registerMermaidPopup(closestElement);
+            closestElement.setAttribute('data-mermaid-popup-bound', 'true');
+        }   
+    }
+
+    // 渲染后添加按钮和弹窗事件
     registerMermaidPopup(myView: HTMLElement) {
         // 移除之前可能绑定的事件，防止多次绑定
         myView.removeEventListener('click', this.handleMermaidClick);
-
         this.ObserveToAddPopupButton(myView);
-
         this.registerDomEvent(myView, 'click', this.handleMermaidClick);
     }
 
     ObserveToAddPopupButton(myView: HTMLElement){
         const observer = new MutationObserver((mutationsList, observer) => {
-            this.doAddPopupButton(myView);
+            console.log('mutationsList', mutationsList);
+            for (let i=0;i<mutationsList.length;i++) {
+                let mutation = mutationsList[i];
+                if (mutation.type !== "childList") {
+                    continue;
+                }
+                if (mutation.addedNodes.length < 1) {
+                    continue;
+                }
+                mutation.addedNodes.forEach(
+                    (node)=>{
+                        this.doAddPopupButton(node as HTMLElement);
+                    }
+                );                
+            }
         });
 
         observer.observe(myView, { childList: true, subtree: true });
-        this.doAddPopupButton(myView);
     }
 
-    doAddPopupButton(myView: HTMLElement){
-        // Find Mermaid diagrams and append a button to each
-        const mermaidDivs = myView.querySelectorAll('.mermaid');
-        mermaidDivs.forEach((mermaidDiv) => {
-            this.addPopupButton(mermaidDiv as HTMLElement, myView);
+    ObserveToAddPopupButton_in_Preview(myView: HTMLElement, isPreviewMode:boolean){
+        const observer = new MutationObserver((mutationsList, observer) => {
+            for (let i=0;i<mutationsList.length;i++) {
+                let mutation = mutationsList[i];
+                if (mutation.type !== "childList") {
+                    continue;
+                }
+                if (mutation.addedNodes.length < 1) {
+                    continue;
+                }
+                mutation.addedNodes.forEach(
+                    (node)=>{
+                        this.doAddPopupButton(node as HTMLElement, isPreviewMode);
+                    }
+                );                
+            }
         });
+
+        observer.observe(myView, { childList: true, subtree: true });
+    }
+    
+    GetSettingsClassElementAll(contentEl:HTMLElement){
+        let mapDiagramClassAll = this.GetSettingsDiagramClassAll();
+        let selector = Object.values(mapDiagramClassAll).join(', ');
+        return contentEl.querySelectorAll(selector);
+    }
+
+    GetSettingsDiagramClassAll(){
+        return { ...this.settings.kvMapReserved, ...this.settings.kvMapDefault, ...this.settings.kvMap };
+    }
+
+    doAddPopupButton(node: HTMLElement, isPreviewMode:boolean = false){
+        // Find target diagrams and append a button to each
+        let closestElement = this.GetSettingsClassElementClosest(node);
+        if (closestElement)
+            this.addPopupButton(closestElement, node, isPreviewMode);
     }
 
     // Add a button to each Mermaid diagram for triggering the popup
-    addPopupButton(mermaidDiv: HTMLElement, myView: HTMLElement) {
+    addPopupButton(target: HTMLElement, start:HTMLElement, isPreviewMode:boolean = false) {
+
+        let popupButtonClass = 'mermaid-popup-button';
+        let popupButtonClass_Reading = 'mermaid-popup-button-reading';
+        let popupButtonClass_Reading_container = 'mermaid-popup-button-reading-container';
         // Ensure the button is only added once
-        if (mermaidDiv.querySelector('.mermaid-popup-button')) return;
-    
+        if (!isPreviewMode && target.querySelector('.' + popupButtonClass)) 
+            return;
+
+        if (isPreviewMode && target.querySelector('.' + popupButtonClass_Reading))
+            return;
+
         // Create the popup button
-        const popupButton = mermaidDiv.doc.createElement('button');
-        popupButton.classList.add('mermaid-popup-button');
+        const popupButton = target.doc.createElement('button');
+        
+        if (isPreviewMode && !target.classList.contains(popupButtonClass_Reading_container))
+            target.classList.add(popupButtonClass_Reading_container);
+
+        popupButton.classList.add(isPreviewMode?popupButtonClass_Reading:popupButtonClass);
         popupButton.textContent = 'Open Popup';
         setIcon(popupButton, 'maximize');
         popupButton.title = 'Open Popup';
 
-        // Append the button to the Mermaid diagram container
-        mermaidDiv.setCssStyles({
-            position : 'relative' // Ensure the diagram has relative positioning for the button
-        });
-        mermaidDiv.appendChild(popupButton);
+        target.appendChild(popupButton);
+
+        // bind click to popup
+        this.registerDomEvent(target, 'click', this.handleMermaidClick);
 
         let isDragging = false;
 
@@ -82,22 +203,19 @@ export default class MermaidPopupPlugin extends Plugin {
             // Only trigger popup if no dragging occurred
             if (!isDragging) {
                 evt.stopPropagation(); // Prevent triggering any other click events
-                const svg = mermaidDiv.querySelector('svg');
-                if (svg) {
-                    this.openPopup(svg as SVGSVGElement);
-                }
+                this.openPopup(target);
             }
             // Reset the dragging flag after click
             isDragging = false;
         });
     
         // Make the button draggable
-        this.makeButtonDraggable(popupButton, mermaidDiv, myView, () => {
+        this.makeButtonDraggable(popupButton, target, () => {
             isDragging = true; // Set dragging to true during the drag
         });
     }
 
-    makeButtonDraggable(button: HTMLElement, mermaidDiv: HTMLElement, myView: HTMLElement, onDragStart: () => void) {
+    makeButtonDraggable(button: HTMLElement, mermaidDiv: HTMLElement, onDragStart: () => void) {
         // posX, posY, 移动步长
         let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
     
@@ -128,12 +246,6 @@ export default class MermaidPopupPlugin extends Plugin {
                 mouseX = e.clientX;
                 mouseY = e.clientY;
 
-                // console.log("mX,mY,bL,bT, bcL, bcT, sL, sT\n", 
-                //     mouseX,mouseY, 
-                //     button.offsetLeft,button.offsetTop, 
-                //     button.getBoundingClientRect().left, button.getBoundingClientRect().top,
-                // button.style.left, button.style.top);
-
                 hasMoved = true;
                 onDragStart(); // 标记为拖动
 
@@ -162,8 +274,6 @@ export default class MermaidPopupPlugin extends Plugin {
                 button.doc.onmouseup = null;
             };
         };
-
-
     }   
     
     GetPosButtonToMermaid(eleBtn: HTMLElement, eleDiv: HTMLElement){
@@ -177,60 +287,96 @@ export default class MermaidPopupPlugin extends Plugin {
         return { top: buttonRelativeTop, left:buttonRelativeLeft};
     }
 
+    IsClassListContains_SettingsDiagramClass(ele:HTMLElement){
+        if (ele.classList == null || ele.classList.length == 0)
+            return false;
+        let mergedMap = this.GetSettingsDiagramClassAll();
+        for(var i=0;i<ele.classList.length;i++)
+        {
+            if (Object.values(mergedMap).includes('.' + ele.classList[i]))
+                return true;
+        }
+        return false;
+    }
+
+    GetSettingsClassElementClosest(startElement:HTMLElement){
+        
+        let _parent = startElement;
+
+        while(_parent){
+            if(this.IsClassListContains_SettingsDiagramClass(_parent)){
+                return _parent;
+            }
+
+            if (_parent.parentElement)
+                _parent = _parent.parentElement;
+            else 
+                break;
+        }
+        return null
+    }
+
     // 绑定新的事件处理
     handleMermaidClick = (evt: MouseEvent) => {
         if (!evt.ctrlKey) return;
+        evt.stopPropagation();
 
-        const target = evt.target as HTMLElement;
-        const mermaidDiv = target.closest('.mermaid') as HTMLElement;
-        if (mermaidDiv) {
-            const svg = mermaidDiv.querySelector('svg');
-            if (svg) {
-                this.openPopup(svg as SVGSVGElement);
-            }
-        }
+        let targetElement = evt.target as HTMLElement;
+        let closestElement = this.GetSettingsClassElementClosest(targetElement);
+        if(closestElement)
+            this.openPopup(closestElement);
     };
 
-    openPopup(svgElement: SVGSVGElement) {
-        const overlay = svgElement.doc.createElement('div');
+    openPopup(targetElement: HTMLElement) {
+        // targetElement.requestFullscreen();
+        // return;
+
+        // popup-overlay
+        const overlay = targetElement.doc.createElement('div');
         overlay.classList.add('popup-overlay');
 
-        const popup = svgElement.doc.createElement('div');
-        popup.classList.add('popup-content', 'draggable', 'resizable');
-        popup.appendChild(svgElement.cloneNode(true));
+        // copy target
+        let targetElementClone = targetElement.cloneNode(true);
+        let targetElementInPopup = targetElementClone as HTMLElement;
+        const childElement = targetElementInPopup.querySelector('.mermaid-popup-button'); // 获取需要删除的子元素
+        if (childElement) {
+            targetElementInPopup.removeChild(childElement); // 从父元素中删除子元素
+        }        
+        targetElementInPopup.classList.add('popup-content', 'draggable', 'resizable');
 
+        let _doc = targetElementInPopup.doc;
         // Create a container for the control buttons
-        const buttonContainer = svgElement.doc.createElement('div');
+        const buttonContainer = _doc.createElement('div');
         buttonContainer.classList.add('button-container');
 
         // Create zoom in and zoom out buttons
-        const zoomInButton = svgElement.doc.createElement('button');
+        const zoomInButton = _doc.createElement('button');
         zoomInButton.classList.add('control-button', 'zoom-in');
         zoomInButton.textContent = '+';
 
-        const zoomOutButton = svgElement.doc.createElement('button');
+        const zoomOutButton = _doc.createElement('button');
         zoomOutButton.classList.add('control-button', 'zoom-out');
         zoomOutButton.textContent = '-';
 
         // Create arrow buttons
-        const upButton = svgElement.doc.createElement('button');
+        const upButton = _doc.createElement('button');
         upButton.classList.add('control-button', 'arrow-up');
         upButton.textContent = '↑';
 
-        const downButton = svgElement.doc.createElement('button');
+        const downButton = _doc.doc.createElement('button');
         downButton.classList.add('control-button', 'arrow-down');
         downButton.textContent = '↓';
 
-        const leftButton = svgElement.doc.createElement('button');
+        const leftButton = _doc.doc.createElement('button');
         leftButton.classList.add('control-button', 'arrow-left');
         leftButton.textContent = '←';
 
-        const rightButton = svgElement.doc.createElement('button');
+        const rightButton = _doc.doc.createElement('button');
         rightButton.classList.add('control-button', 'arrow-right');
         rightButton.textContent = '→';
 
         // Create a close button
-        const closeButton = svgElement.doc.createElement('button');
+        const closeButton = _doc.doc.createElement('button');
         closeButton.classList.add('control-button', 'close-popup');
         closeButton.textContent = 'X';
 
@@ -244,12 +390,9 @@ export default class MermaidPopupPlugin extends Plugin {
         buttonContainer.appendChild(closeButton);
 
         // Append popup and button container to the overlay
-        overlay.appendChild(popup);
+        overlay.appendChild(targetElementInPopup);
         overlay.appendChild(buttonContainer);
-        svgElement.doc.body.appendChild(overlay);
-
-        // Adjust SVG size to fit the popup-content
-        this.adjustSvgSize(popup.querySelector('svg') as SVGSVGElement, popup);
+        _doc.body.appendChild(overlay);
 
         // Close popup on overlay click
         overlay.addEventListener('click', (evt) => {
@@ -257,7 +400,7 @@ export default class MermaidPopupPlugin extends Plugin {
         });
 
         // Stop propagation to prevent closing when clicking on popup content
-        popup.addEventListener('click', (evt) => {
+        targetElementInPopup.addEventListener('click', (evt) => {
             evt.stopPropagation();
         });
 
@@ -268,32 +411,32 @@ export default class MermaidPopupPlugin extends Plugin {
 
         zoomInButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.zoomPopup(popup, 1.1, overlay);
+            this.zoomPopup(targetElementInPopup, true);
         });
 
         zoomOutButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.zoomPopup(popup, 0.9, overlay);
+            this.zoomPopup(targetElementInPopup, false);
         });
 
         upButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.movePopup(popup, 0, -20);
+            this.movePopup(targetElementInPopup, 0, -1);
         });
 
         downButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.movePopup(popup, 0, 20);
+            this.movePopup(targetElementInPopup, 0, 1);
         });
 
         leftButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.movePopup(popup, -20, 0);
+            this.movePopup(targetElementInPopup, -1, 0);
         });
 
         rightButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.movePopup(popup, 20, 0);
+            this.movePopup(targetElementInPopup, 1, 0);
         });
 
         closeButton.addEventListener('click', (evt) => {
@@ -302,31 +445,23 @@ export default class MermaidPopupPlugin extends Plugin {
         });
 
         // Listen for the Escape key to close the popup
-        popup.doc.addEventListener('keydown', (evt) => {
+        targetElementInPopup.doc.addEventListener('keydown', (evt) => {
             if (evt.key === 'Escape') {
-                svgElement.doc.body.removeChild(overlay);
+                targetElementInPopup.doc.body.removeChild(overlay);
             }
         });        
 
         // Make the popup draggable
-        this.makeDraggable(popup);
+        this.makeDraggable(targetElementInPopup);
 
         // Make the popup resizable
-        popup.classList.add('resizable');
-
-        const popup_style = popup.win.getComputedStyle(popup);
-        //console.log('Popup position before:', popup_style.transform, popup.getBoundingClientRect());
-        // Initialize popup position if not already set
-        if (!popup_style.transform) {
-            popup_style.transform = 'translate(0px, 0px)';
-            //console.log('Popup position:', popup_style.transform, popup.getBoundingClientRect());
-        }
+        targetElementInPopup.classList.add('resizable');
 
         // Add mouse wheel event for zooming
-        popup.addEventListener('wheel', (evt) => {
+        targetElementInPopup.addEventListener('wheel', (evt) => {
             evt.preventDefault();
-            const scale = evt.deltaY < 0 ? 1.1 : 0.9;
-            this.zoomPopupAtCursor(popup, scale, overlay, evt);
+            const isOut = evt.deltaY > 0;
+            this.zoomPopupAtCursor(targetElementInPopup, isOut, evt);
         });
     }
 
@@ -336,102 +471,52 @@ export default class MermaidPopupPlugin extends Plugin {
         const matrix = style.transform === 'none' ? new DOMMatrix() : new DOMMatrixReadOnly(style.transform);
 
         // Calculate new position
-        const newX = matrix.m41 + dx;
-        const newY = matrix.m42 + dy;
+        const newX = matrix.m41 + (dx==0 ? dx : dx * parseInt(this.settings.MoveStepValue));
+        const newY = matrix.m42 + (dy==0 ? dy : dy * parseInt(this.settings.MoveStepValue));
 
         popup.setCssStyles({transform : `translate(${newX}px, ${newY}px) scale(${matrix.a})`});
     }
 
     // Helper method to zoom the popup and SVG
-    zoomPopup(popup: HTMLElement, scale: number, overlay: HTMLElement) {
-        const style = popup.win.getComputedStyle(popup);
-        const matrix = style.transform === 'none' ? new DOMMatrix() : new DOMMatrixReadOnly(style.transform);
-        const currentScale = matrix.a;
-        const newScale = currentScale * scale;
-
-        // Get the center point of the overlay
-        const overlayRect = overlay.getBoundingClientRect();
-        const overlayCenterX = overlayRect.left + overlayRect.width / 2;
-        const overlayCenterY = overlayRect.top + overlayRect.height / 2;
-
-        // Get the current position of the popup
-        const popupRect = popup.getBoundingClientRect();
-        const popupCenterX = popupRect.left + popupRect.width / 2;
-        const popupCenterY = popupRect.top + popupRect.height / 2;
-
-        // Calculate the distance from the popup center to the overlay center
-        const offsetX = overlayCenterX - popupCenterX;
-        const offsetY = overlayCenterY - popupCenterY;
-
-        // Adjust the translation to keep the popup centered relative to the overlay
-        const newX = matrix.m41 + offsetX * (1 - scale);
-        const newY = matrix.m42 + offsetY * (1 - scale);
-
-        popup.setCssStyles({
-            transformOrigin : 'center center', // Ensure scaling is centered
-            transform : `translate(${newX}px, ${newY}px) scale(${newScale})`
-        });
+    zoomPopup(popup: HTMLElement, isOut:boolean) {
+        this.zoomPopupCore(popup, isOut, 1, 1);
     }
 
     // Helper method to zoom the popup at the cursor position
-    zoomPopupAtCursor(popup: HTMLElement, scale: number, overlay: HTMLElement, evt: WheelEvent) {
-        const style = popup.win.getComputedStyle(popup);
-        const matrix = style.transform === 'none' ? new DOMMatrix() : new DOMMatrixReadOnly(style.transform);
-        const currentScale = matrix.a;
-        const newScale = currentScale * scale;
+    zoomPopupAtCursor(popup: HTMLElement, isOut:boolean, evt: WheelEvent) {
 
-        // Get the mouse position relative to the overlay
-        const overlayRect = overlay.getBoundingClientRect();
-        const mouseX = evt.clientX - overlayRect.left;
-        const mouseY = evt.clientY - overlayRect.top;
-
-        // Get the current position of the popup
+        // Get the current position of the popup. 
+        // popup 当前中心坐标 = 相对客户端左上的坐标 + 自身长宽/2
         const popupRect = popup.getBoundingClientRect();
         const popupCenterX = popupRect.left + popupRect.width / 2;
         const popupCenterY = popupRect.top + popupRect.height / 2;
 
         // Calculate the distance from the popup center to the mouse position
-        const offsetX = mouseX - popupCenterX;
-        const offsetY = mouseY - popupCenterY;
+        const offsetX = evt.clientX - popupCenterX;
+        const offsetY = evt.clientY - popupCenterY;
 
-        // Adjust the translation to zoom at the mouse position
-        const newX = matrix.m41 - offsetX * (scale - 1);
-        const newY = matrix.m42 - offsetY * (scale - 1);
+        this.zoomPopupCore(popup, isOut, offsetX, offsetY);
+    }
+
+    // Helper method to zoom the popup and SVG
+    zoomPopupCore(popup: HTMLElement, isOut:boolean, offsetX: number, offsetY: number) {
+        const style = popup.win.getComputedStyle(popup);
+        const matrix = style.transform === 'none' ? new DOMMatrix() : new DOMMatrixReadOnly(style.transform);
+        const currentScale = matrix.a;
+
+        // isOut, 1.1
+        let symbol:number = isOut ? 1:-1;
+        const newScale = currentScale * (1+ symbol * parseFloat(this.settings.ZoomRatioValue));
+
+        // Adjust the translation to keep the popup centered relative to the overlay
+        const newX = matrix.m41 - offsetX * symbol * parseFloat(this.settings.ZoomRatioValue);
+        const newY = matrix.m42 - offsetY * symbol * parseFloat(this.settings.ZoomRatioValue);
 
         popup.setCssStyles({
             transformOrigin : 'center center', // Ensure scaling is centered
             transform : `translate(${newX}px, ${newY}px) scale(${newScale})`
         });
-    }
-
-    // Helper method to adjust SVG size to fit the popup
-    adjustSvgSize(svgElement: SVGSVGElement, popup: HTMLElement) {
-        const svgRect = svgElement.getBoundingClientRect();
-        const popupRect = popup.getBoundingClientRect();
-
-        const svgWidth = svgRect.width;
-        const svgHeight = svgRect.height;
-        const popupWidth = popupRect.width;
-        const popupHeight = popupRect.height;
-
-        let scaleX = popupWidth / svgWidth;
-        let scaleY = popupHeight / svgHeight;
-        let scale = Math.min(scaleX, scaleY);
-
-        if (scale < 1) {
-            svgElement.setCssStyles({width : `${svgWidth * scale}px`, height : `${svgHeight * scale}px`});
-        } else {
-            svgElement.setCssStyles({width : '100%', height : '100%'});
-        }
-
-        svgElement.setCssStyles({
-            transformOrigin : 'center center', // Center transform origin
-            position : 'absolute',
-            top : '50%',
-            left : '50%',
-            transform : 'translate(-50%, -50%)'
-        });
-    }
+    }    
 
     // Helper method to make the popup draggable
     makeDraggable(element: HTMLElement) {
@@ -480,5 +565,5 @@ export default class MermaidPopupPlugin extends Plugin {
         };
 
         element.addEventListener('mousedown', mouseDownHandler);
-    }
+    }    
 }
