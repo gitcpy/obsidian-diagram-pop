@@ -40,7 +40,7 @@ export default class MermaidPopupPlugin extends Plugin {
     settings!: MermaidPopupSetting;
 
     async onload() {
-        console.log('Loading Mermaid Popup Plugin ' + this.manifest.version);
+        console.log(`Loading ${this.manifest.name} ${this.manifest.version}`);
 
         // 加载设置
         await this.loadSettings();
@@ -71,7 +71,7 @@ export default class MermaidPopupPlugin extends Plugin {
     }
 
     onunload() {
-        console.log('Unloading Mermaid Popup Plugin ' + this.manifest.version);
+        console.log(`Unloading ${this.manifest.name} ${this.manifest.version}`);
     }
 
     async loadSettings() {
