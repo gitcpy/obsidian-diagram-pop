@@ -109,7 +109,6 @@ export default class MermaidPopupPlugin extends Plugin {
 
     ObserveToAddPopupButton(myView: HTMLElement){
         const observer = new MutationObserver((mutationsList, observer) => {
-            console.log('mutationsList', mutationsList);
             for (let i=0;i<mutationsList.length;i++) {
                 let mutation = mutationsList[i];
                 if (mutation.type !== "childList") {
@@ -411,12 +410,12 @@ export default class MermaidPopupPlugin extends Plugin {
 
         zoomInButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.zoomPopup(targetElementInPopup, true);
+            this.zoomPopup(targetElementInPopup, false);
         });
 
         zoomOutButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.zoomPopup(targetElementInPopup, false);
+            this.zoomPopup(targetElementInPopup, true);
         });
 
         upButton.addEventListener('click', (evt) => {
@@ -495,7 +494,7 @@ export default class MermaidPopupPlugin extends Plugin {
         const offsetX = evt.clientX - popupCenterX;
         const offsetY = evt.clientY - popupCenterY;
 
-        this.zoomPopupCore(popup, !isOut, offsetX, offsetY);
+        this.zoomPopupCore(popup, isOut, offsetX, offsetY);
     }
 
     // Helper method to zoom the popup and SVG
@@ -505,7 +504,7 @@ export default class MermaidPopupPlugin extends Plugin {
         const currentScale = matrix.a;
 
         // isOut, 1.1
-        let symbol:number = isOut ? 1:-1;
+        let symbol:number = isOut ? -1:1;
         const newScale = currentScale * (1+ symbol * parseFloat(this.settings.ZoomRatioValue));
 
         // Adjust the translation to keep the popup centered relative to the overlay
