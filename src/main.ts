@@ -5,9 +5,15 @@ interface MermaidPopupSetting {
     kvMap: Record<string, string>;
     kvMapDefault: Record<string, string>;
     kvMapReserved: Record<string, string>;
-    
+
     PopupSizeInitValue:string;
     kvMapPopupSizeInit: Record<string, string>;
+
+    DiagramHeightVal:string;
+    DiagramHeightMin:string;
+    DiagramHeightMax:string;
+    DiagramHeightStep:string;
+
     ZoomRatioValue:string;
     kvMapZoomRatio: Record<string, string>;
     MoveStepValue:string;
@@ -29,7 +35,13 @@ const DEFAULT_SETTINGS: MermaidPopupSetting = {
         '2.0':'2.0',
         '2.5':'2.5',
         '3.0':'3.0'        
-    },    
+    },
+
+    DiagramHeightVal:'600',
+    DiagramHeightMin:'50',
+    DiagramHeightMax:'1500',
+    DiagramHeightStep:'50',
+
     ZoomRatioValue:'0.2',
     kvMapZoomRatio:{
         '0.1':'0.1',
@@ -257,15 +269,16 @@ export default class MermaidPopupPlugin extends Plugin {
         }
             
         let rate_by_height = 1;
-        if (des_h > container.offsetHeight) // 图表高超容器
+        let dg_h_val = parseInt(this.settings.DiagramHeightVal);
+        if (des_h > dg_h_val) // 图表高超容器
         {
-            rate_by_height = container.offsetHeight / des_h;
+            rate_by_height = dg_h_val / des_h;
         }
 
         if (rate_by_width == 1 && rate_by_height == 1)
             return;
 
-        let rate = rate_by_width < rate_by_height ? rate_by_width : rate_by_width;
+        let rate = rate_by_width < rate_by_height ? rate_by_width : rate_by_height;
 
         desEle.setCssStyles({
             height: des_h*rate + 'px',
