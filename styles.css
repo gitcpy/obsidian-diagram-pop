@@ -197,6 +197,11 @@ button.mermaid-popup-button-reading:hover {
     width: 50px;
 }
 
+.setting-table .settings-icon{
+    display: block;
+    border-top: 0px;
+}
+
 /* 表格样式 */
 .kv-display table {
     width: 100%;
