@@ -59,7 +59,6 @@ class MermaidPopupSettingTab extends PluginSettingTab {
         dg_h_val_input.setAttribute('max',dg_h_max);
         dg_h_val_input.setAttribute('step',dg_h_step);
         dg_h_val_input.setAttribute('value',dg_h_val);
-        dg_h_val_input.setAttribute('title', '136546s46fs4fsdfs654s6df');
 
         let dg_h_val_max = td_02_2_dg_h_val.createEl('p');
         dg_h_val_max.setText(dg_h_max);
@@ -91,6 +90,7 @@ class MermaidPopupSettingTab extends PluginSettingTab {
                     'it will adapt again. ');
                 msgModal.open();
             });
+            extra.extraSettingsEl.closest('.setting-item')?.classList.add('settings-icon');
         });
 
         const row_1 = tbody.createEl('tr');
