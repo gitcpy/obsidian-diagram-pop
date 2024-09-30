@@ -13,11 +13,31 @@ class MermaidPopupSettingTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
+
+        let titleZoomInit = containerEl.createEl('h2', { text: 'Popup Size Init' });
+        titleZoomInit.classList.add('config-text');
+        // 弹窗初始化
+        new Setting(containerEl)
+        .setName('Choose the Popup Size')
+        .addDropdown(dropdown => {
+            let ddPopupSizeInit = this.plugin.settings.kvMapPopupSizeInit;
+            for(const key in ddPopupSizeInit){
+                dropdown.addOption(key, ddPopupSizeInit[key])
+            }
+            dropdown
+                .setValue(this.plugin.settings.PopupSizeInitValue)
+                .onChange(async (value) => {
+                    this.plugin.settings.PopupSizeInitValue = value;
+                    await this.plugin.saveSettings();
+                }
+            )
+        });  
+
         let titleZoomRatio = containerEl.createEl('h2', { text: 'Zoom Ratio' });
         titleZoomRatio.classList.add('config-text');
 
-       // 缩放比例
-       new Setting(containerEl)
+        // 弹窗初始化
+        new Setting(containerEl)
         .setName('Choose the ratio for zooming in or out')
         .addDropdown(dropdown => {
             let ddZoomRatio = this.plugin.settings.kvMapZoomRatio;
@@ -37,7 +57,7 @@ class MermaidPopupSettingTab extends PluginSettingTab {
         let titleMoveStep = containerEl.createEl('h2', { text: 'Move Step' });
         titleMoveStep.classList.add('config-text');
 
-       // 缩放比例
+       // 移动步长
        new Setting(containerEl)
         .setName('Choose the step for moving')
         .addDropdown(dropdown => {
