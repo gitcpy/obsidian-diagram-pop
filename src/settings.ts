@@ -1,4 +1,4 @@
-import { App, Plugin, PluginSettingTab, Setting, TFile, Notice } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, TFile, Notice, Modal } from 'obsidian';
 import MermaidPopupPlugin from './main'
 
 class MermaidPopupSettingTab extends PluginSettingTab {
@@ -13,11 +13,18 @@ class MermaidPopupSettingTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
+        const tableContainer = containerEl.createDiv({ cls: 'setting-table' });
+        const table = tableContainer.createEl('table');
+        const tbody = table.createEl('table');
+        const row_01_popup_sz_and_dg_h_title = tbody.createEl('tr');
+        const row_02_popup_sz_and_dg_h_val = tbody.createEl('tr');
 
-        let titleZoomInit = containerEl.createEl('h2', { text: 'Popup Size Init' });
-        titleZoomInit.classList.add('config-text');
+        const td_01_1_popup_sz_title = row_01_popup_sz_and_dg_h_title.createEl('td');
+        let popup_sz_title = td_01_1_popup_sz_title.createEl('h2', { text: 'Popup Size Init' });
+        popup_sz_title.classList.add('config-text');      
+        const td_02_1_popup_sz = row_02_popup_sz_and_dg_h_val.createEl('td');
         // 弹窗初始化
-        new Setting(containerEl)
+        new Setting(td_02_1_popup_sz)
         .setName('Choose the Popup Size')
         .addDropdown(dropdown => {
             let ddPopupSizeInit = this.plugin.settings.kvMapPopupSizeInit;
@@ -33,11 +40,69 @@ class MermaidPopupSettingTab extends PluginSettingTab {
             )
         });  
 
-        let titleZoomRatio = containerEl.createEl('h2', { text: 'Zoom Ratio' });
-        titleZoomRatio.classList.add('config-text');
+        let td_01_2_dg_h= row_01_popup_sz_and_dg_h_title.createEl('td');
+        let td_02_1_dg_h_title = td_01_2_dg_h.createEl('h2', { text: 'Original Diagram Height' });
+        td_02_1_dg_h_title.classList.add('config-text');         
+        const td_02_2_dg_h_val = row_02_popup_sz_and_dg_h_val.createEl('td');
+        td_02_2_dg_h_val.classList.add('ori_diagram_height');
+        let dg_h_val = this.plugin.settings.DiagramHeightVal; 
+        let dg_h_min = this.plugin.settings.DiagramHeightMin; 
+        let dg_h_max = this.plugin.settings.DiagramHeightMax;
+        let dg_h_step = this.plugin.settings.DiagramHeightStep;
 
-        // 弹窗初始化
-        new Setting(containerEl)
+        let dg_h_val_min = td_02_2_dg_h_val.createEl('p');
+        dg_h_val_min.setText(dg_h_min);
+
+        let dg_h_val_input = td_02_2_dg_h_val.createEl('input');
+        dg_h_val_input.setAttribute('type','range');
+        dg_h_val_input.setAttribute('min',dg_h_min);
+        dg_h_val_input.setAttribute('max',dg_h_max);
+        dg_h_val_input.setAttribute('step',dg_h_step);
+        dg_h_val_input.setAttribute('value',dg_h_val);
+        dg_h_val_input.setAttribute('title', '136546s46fs4fsdfs654s6df');
+
+        let dg_h_val_max = td_02_2_dg_h_val.createEl('p');
+        dg_h_val_max.setText(dg_h_max);
+        let dg_h_val_cur_title = td_02_2_dg_h_val.createEl('p',  {text:'current:'});
+        dg_h_val_cur_title.classList.add('ori_diagram_height_cur');
+        let dg_h_val_cur = td_02_2_dg_h_val.createEl('p');
+        dg_h_val_cur.classList.add('ori_diagram_height_val');
+        dg_h_val_cur.setText(dg_h_val);
+
+        // 监听 input 事件
+        dg_h_val_input.addEventListener('input', (event) => {
+            const value = dg_h_val_input.value; // 获取当前值
+            dg_h_val_cur.setText(value + ''); // 更新显示
+            this.plugin.settings.DiagramHeightVal = value;
+            this.plugin.saveSettings();
+        });
+        const addSettings = new Setting(td_02_2_dg_h_val);
+        addSettings.addExtraButton((extra) => {
+            extra.setIcon('info');
+            extra.setTooltip(
+                'Click for tips on Original Diagram Height Setting.'
+            );
+            extra.onClick(() => {
+                let msgModal = new Modal(this.app);
+                msgModal.setTitle('Original Diagram Height Setting');
+                msgModal.setContent('Under proportional scaling, ' +
+                    'adapt to the width of editor, ' + 
+                    'and then if the height is still greater than the value of \'Original Diagram Height\',' + 
+                    'it will adapt again. ');
+                msgModal.open();
+            });
+        });
+
+        const row_1 = tbody.createEl('tr');
+        const row_2 = tbody.createEl('tr');
+
+        const td_1_1 = row_1.createEl('td');
+        // 缩放设置标题
+        let titleZoomRatio = td_1_1.createEl('h2', { text: 'Zoom Ratio' });
+        titleZoomRatio.classList.add('config-text');
+        const td_2_1 = row_2.createEl('td');
+        // 缩放设置
+        new Setting(td_2_1)
         .setName('Choose the ratio for zooming in or out')
         .addDropdown(dropdown => {
             let ddZoomRatio = this.plugin.settings.kvMapZoomRatio;
@@ -50,15 +115,16 @@ class MermaidPopupSettingTab extends PluginSettingTab {
                     this.plugin.settings.ZoomRatioValue = value;
                     await this.plugin.saveSettings();
                 }
-            
             )
-        });   
+        });  
 
-        let titleMoveStep = containerEl.createEl('h2', { text: 'Move Step' });
+        const td_1_2 = row_1.createEl('td');
+        // 移动步长设置标题
+        let titleMoveStep = td_1_2.createEl('h2', { text: 'Move Step' });
         titleMoveStep.classList.add('config-text');
-
-       // 移动步长
-       new Setting(containerEl)
+        const td_2_2 = row_2.createEl('td');
+        // 移动步长设置
+        new Setting(td_2_2)
         .setName('Choose the step for moving')
         .addDropdown(dropdown => {
             let ddZoomRatio = this.plugin.settings.kvMapMoveStep;
@@ -73,7 +139,7 @@ class MermaidPopupSettingTab extends PluginSettingTab {
                 }
             
             )
-        });           
+        });  
 
         let title = containerEl.createEl('h2', { text: 'Add New Diagram' });
         title.classList.add('config-text');
