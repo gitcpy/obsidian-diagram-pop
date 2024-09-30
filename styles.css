@@ -1,4 +1,3 @@
-
 .popup-overlay {
     position: fixed;
     top: 0;
@@ -6,6 +5,7 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -18,9 +18,7 @@
     /* 垂直方向居中 */
     align-items: center;       
 
-    width: 70%;
-    height: 70%;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); */
 
     /* Ensure scaling is centered */
     /* transform-origin: center; */
@@ -39,8 +37,6 @@ cursor: grabbing; /* 拖动时鼠标变为抓手 */
     /* 垂直方向居中 */
     align-items: center;  
 
-    max-width: 100%;
-    max-height: 100%;
     box-sizing: border-box;
 }
 
@@ -50,7 +46,7 @@ cursor: grabbing; /* 拖动时鼠标变为抓手 */
 
 /* 浅色模式下的弹窗背景 */
 .theme-light .popup-content {
-    background-color: #ffffff; /* 白色背景 */
+    background-color: rgb(255, 255, 255, 0.5); /* 白色背景 */
     color: #000000; /* 黑色文本 */
 }
 
@@ -61,17 +57,21 @@ cursor: grabbing; /* 拖动时鼠标变为抓手 */
 
 /* 深色模式下的弹窗背景 */
 .theme-dark .popup-content {
-    background-color: #333333; /* 深灰色背景 */
+    background-color: rgb(51, 51, 51, 0.5); /* 深灰色背景 */
     color: #ffffff; /* 白色文本 */
 }
 
-.theme-dark .popup-content > * {
+.theme-dark .popup-content {
     background-color: inherit;
     color: inherit;
 }
 
 
 /*开启弹窗按钮*/
+.mermaid-popup-button-container, .mermaid-popup-button-container-reading {
+    position: relative !important;
+}
+
 button.mermaid-popup-button {
     position: fixed;;
     bottom: 10px;
@@ -90,16 +90,10 @@ button.mermaid-popup-button:hover {
     cursor: pointer;
 }
 
-/*开启弹窗按钮 - 阅读模式*/
-
-.mermaid-popup-button-reading-container {
-    position: relative !important;;
-}
-
 button.mermaid-popup-button-reading {
-    position: absolute;
+    position: absolute;;
     bottom: 10px;
-    right: 10px;    
+    right: 10px;
     background-color: rgba(0, 0, 0, 0.1); /* 半透明 */
     color: var(--text-normal);
     border: none;
