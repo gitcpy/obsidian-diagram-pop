@@ -5,7 +5,9 @@ interface MermaidPopupSetting {
     kvMap: Record<string, string>;
     kvMapDefault: Record<string, string>;
     kvMapReserved: Record<string, string>;
-
+    
+    PopupSizeInitValue:string;
+    kvMapPopupSizeInit: Record<string, string>;
     ZoomRatioValue:string;
     kvMapZoomRatio: Record<string, string>;
     MoveStepValue:string;
@@ -20,11 +22,20 @@ const DEFAULT_SETTINGS: MermaidPopupSetting = {
     kvMapReserved:{
         'Reserved': '.diagram-popup'
     },
-    ZoomRatioValue:'0.1',
+    PopupSizeInitValue:'1.5',
+    kvMapPopupSizeInit:{
+        '1.0':'1.0',
+        '1.5':'1.5',
+        '2.0':'2.0',
+        '2.5':'2.5',
+        '3.0':'3.0'        
+    },    
+    ZoomRatioValue:'0.2',
     kvMapZoomRatio:{
         '0.1':'0.1',
         '0.2':'0.2',
-        '0.3':'0.3'
+        '0.3':'0.3',
+        '0.4':'0.4'
     },
     MoveStepValue:'30',
     kvMapMoveStep:{
@@ -38,6 +49,8 @@ const DEFAULT_SETTINGS: MermaidPopupSetting = {
 
 export default class MermaidPopupPlugin extends Plugin {
     settings!: MermaidPopupSetting;
+    observer_editting!:MutationObserver | null;
+    observer_reading!:MutationObserver | null; 
 
     async onload() {
         console.log(`Loading ${this.manifest.name} ${this.manifest.version}`);
@@ -49,25 +62,48 @@ export default class MermaidPopupPlugin extends Plugin {
         this.addSettingTab(new MermaidPopupSettingTab(this.app, this));
 
         this.registerMarkdownPostProcessor((element, context) => {
-            this.registerMarkdownPostProcessor_MermaidPopup(element);
+            //this.registerMarkdownPostProcessor_MermaidPopup(element);
         });
       
         // 监听模式切换事件
         this.registerEvent(this.app.workspace.on('layout-change', () => {
             let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+            if (!view){ // 编辑器关闭
+                this.RelaseWhenfileClose();
+            }
             if (view && view.getViewType() === 'markdown') {
                 // 类型断言为 MarkdownView，以便访问 contentEl
                 const mode = view.getMode();
-                if (mode === 'preview') {
-                    let container = view.containerEl.childNodes[1].childNodes[1] as HTMLElement; // 阅读容器
-                    this.ObserveToAddPopupButton_in_Preview(container, true)
+                const isPreview = mode === 'preview';
+                //let container = view.containerEl.childNodes[1].childNodes[0] as HTMLElement; // 编辑容器
+                let container = view.containerEl.querySelector('.markdown-source-view') as HTMLElement; // 编辑容器
+                if (isPreview) {
+                    //container = view.containerEl.childNodes[1].childNodes[1] as HTMLElement; // 阅读容器
+                    container = view.containerEl.querySelector('.markdown-preview-view') as HTMLElement; // 阅读容器
+
+                    let targetArr = this.GetSettingsClassElementAll(container)
+                    for(var i=0;i<targetArr.length;i++)
+                        this.addPopupButton(targetArr[i] as HTMLElement, isPreview);
+                    this.ObserveToAddPopupButton_Reading(container, isPreview);
+                    return;
                 }
-                else{
-                    let container = view.containerEl.childNodes[1].childNodes[0] as HTMLElement; // 编辑容器
-                    this.ObserveToAddPopupButton(container)
-                }
+
+                let targetArr = this.GetSettingsClassElementAll(container)
+                for(var i=0;i<targetArr.length;i++)
+                    this.addPopupButton(targetArr[i] as HTMLElement);
+                this.ObserveToAddPopupButton(container);
+
+                //this.ObserveToAddPopupButton(view.containerEl, false);
             }
         }));
+    }
+
+    RelaseWhenfileClose()
+    {
+        this.observer_editting?.disconnect();
+        this.observer_editting = null;
+        this.observer_reading?.disconnect();
+        this.observer_reading = null;  
     }
 
     onunload() {
@@ -90,25 +126,16 @@ export default class MermaidPopupPlugin extends Plugin {
 
     // 渲染直接生成，可直接判断添加按钮和弹窗事件
     registerMarkdownPostProcessor_MermaidPopup(ele: HTMLElement){
-        let closestElement = this.GetSettingsClassElementClosest(ele);
-        if (!closestElement)
-            return;
-        if (!closestElement.hasAttribute('data-mermaid-popup-bound')) {
-            this.registerMermaidPopup(closestElement);
-            closestElement.setAttribute('data-mermaid-popup-bound', 'true');
+        let parentElement = ele.parentElement;
+        if (parentElement) {
+            this.addPopupButton(parentElement, false);
         }   
     }
 
-    // 渲染后添加按钮和弹窗事件
-    registerMermaidPopup(myView: HTMLElement) {
-        // 移除之前可能绑定的事件，防止多次绑定
-        myView.removeEventListener('click', this.handleMermaidClick);
-        this.ObserveToAddPopupButton(myView);
-        this.registerDomEvent(myView, 'click', this.handleMermaidClick);
-    }
-
-    ObserveToAddPopupButton(myView: HTMLElement){
-        const observer = new MutationObserver((mutationsList, observer) => {
+    ObserveToAddPopupButton(myView: HTMLElement, isPreviewMode:boolean = false){
+        if (this.observer_editting)
+            return;
+        this.observer_editting = new MutationObserver((mutationsList, observer) => {
             for (let i=0;i<mutationsList.length;i++) {
                 let mutation = mutationsList[i];
                 if (mutation.type !== "childList") {
@@ -117,80 +144,82 @@ export default class MermaidPopupPlugin extends Plugin {
                 if (mutation.addedNodes.length < 1) {
                     continue;
                 }
+
+                // let target = mutation.target as HTMLElement;
+                // let container = this.GetSettingsClassElement(target);
+                // if (!container)
+                //     return;
+                // this.addPopupButton(container as HTMLElement, isPreviewMode);    
+                
                 mutation.addedNodes.forEach(
                     (node)=>{
-                        this.doAddPopupButton(node as HTMLElement);
+                        let nodeEle = node as HTMLElement;
+                        if(this.IsClassListContains_SettingsDiagramClass(nodeEle))
+                            this.addPopupButton(nodeEle, isPreviewMode);
                     }
-                );                
+                );  
             }
         });
 
-        observer.observe(myView, { childList: true, subtree: true });
+        this.observer_editting.observe(myView, { childList: true, subtree: true});
     }
 
-    ObserveToAddPopupButton_in_Preview(myView: HTMLElement, isPreviewMode:boolean){
-        const observer = new MutationObserver((mutationsList, observer) => {
-            for (let i=0;i<mutationsList.length;i++) {
-                let mutation = mutationsList[i];
-                if (mutation.type !== "childList") {
-                    continue;
-                }
-                if (mutation.addedNodes.length < 1) {
-                    continue;
-                }
-                mutation.addedNodes.forEach(
-                    (node)=>{
-                        this.doAddPopupButton(node as HTMLElement, isPreviewMode);
-                    }
-                );                
+    ObserveToAddPopupButton_Reading(myView: HTMLElement, isPreviewMode:boolean){
+        if (this.observer_reading)
+            return;
+        this.observer_reading = new MutationObserver((mutationsList, observer) => {
+            let containerArr = this.GetSettingsClassElementAll(myView);
+            for(var i=0;i<containerArr.length;i++){
+                let container = containerArr[i] as HTMLElement;
+                if(this.IsClassListContains_SettingsDiagramClass(container))
+                    this.addPopupButton(container, isPreviewMode); 
             }
         });
 
-        observer.observe(myView, { childList: true, subtree: true });
+        this.observer_reading.observe(myView, { childList: true, subtree: true});
+    }  
+
+    GetSettingsClassElement(contentEl:HTMLElement){
+        let selector = this.GetSettingsDiagramClassNameAll().join(', ');
+        return contentEl.querySelector(selector);
     }
     
     GetSettingsClassElementAll(contentEl:HTMLElement){
-        let mapDiagramClassAll = this.GetSettingsDiagramClassAll();
-        let selector = Object.values(mapDiagramClassAll).join(', ');
+        let selector = this.GetSettingsDiagramClassNameAll().join(', ');
         return contentEl.querySelectorAll(selector);
     }
 
-    GetSettingsDiagramClassAll(){
-        return { ...this.settings.kvMapReserved, ...this.settings.kvMapDefault, ...this.settings.kvMap };
-    }
-
-    doAddPopupButton(node: HTMLElement, isPreviewMode:boolean = false){
-        // Find target diagrams and append a button to each
-        let closestElement = this.GetSettingsClassElementClosest(node);
-        if (closestElement)
-            this.addPopupButton(closestElement, node, isPreviewMode);
+    GetSettingsDiagramClassNameAll(){
+        let mapDiagramClassAll =  { ...this.settings.kvMapReserved, ...this.settings.kvMapDefault, ...this.settings.kvMap };
+        return Object.values(mapDiagramClassAll);
     }
 
     // Add a button to each Mermaid diagram for triggering the popup
-    addPopupButton(target: HTMLElement, start:HTMLElement, isPreviewMode:boolean = false) {
-
+    addPopupButton(target: HTMLElement, isPreviewMode:boolean = false) {
         let popupButtonClass = 'mermaid-popup-button';
-        let popupButtonClass_Reading = 'mermaid-popup-button-reading';
-        let popupButtonClass_Reading_container = 'mermaid-popup-button-reading-container';
-        // Ensure the button is only added once
-        if (!isPreviewMode && target.querySelector('.' + popupButtonClass)) 
-            return;
+        let popupButtonClass_container = 'mermaid-popup-button-container';
+        if (isPreviewMode){
+            popupButtonClass_container = 'mermaid-popup-button-container-reading';
+            popupButtonClass = 'mermaid-popup-button-reading'
+        }
 
-        if (isPreviewMode && target.querySelector('.' + popupButtonClass_Reading))
+        if (target.querySelector('.' + popupButtonClass)) 
             return;
 
         // Create the popup button
         const popupButton = target.doc.createElement('button');
         
-        if (isPreviewMode && !target.classList.contains(popupButtonClass_Reading_container))
-            target.classList.add(popupButtonClass_Reading_container);
+        if (!target.classList.contains(popupButtonClass_container))
+            target.classList.add(popupButtonClass_container);
 
-        popupButton.classList.add(isPreviewMode?popupButtonClass_Reading:popupButtonClass);
+        popupButton.classList.add(popupButtonClass);
         popupButton.textContent = 'Open Popup';
         setIcon(popupButton, 'maximize');
         popupButton.title = 'Open Popup';
 
         target.appendChild(popupButton);
+
+        this.adjustDiagramWidthAndHeight_ToContainer(target);
 
         // bind click to popup
         this.registerDomEvent(target, 'click', this.handleMermaidClick);
@@ -212,6 +241,57 @@ export default class MermaidPopupPlugin extends Plugin {
         this.makeButtonDraggable(popupButton, target, () => {
             isDragging = true; // Set dragging to true during the drag
         });
+    }
+
+    adjustDiagramWidthAndHeight_ToContainer(container: HTMLElement){
+        let desEle = this.getDiagramElement(container) as HTMLElement;
+        if (!desEle)
+            return;
+
+        let des_w = this.getWidth(desEle);
+        let des_h = this.getHeight(desEle);
+        let rate_by_width = 1;
+        if (des_w > container.offsetWidth) // 图表宽超容器
+        {
+            rate_by_width = container.offsetWidth / des_w;
+        }
+            
+        let rate_by_height = 1;
+        if (des_h > container.offsetHeight) // 图表高超容器
+        {
+            rate_by_height = container.offsetHeight / des_h;
+        }
+
+        if (rate_by_width == 1 && rate_by_height == 1)
+            return;
+
+        let rate = rate_by_width < rate_by_height ? rate_by_width : rate_by_width;
+
+        desEle.setCssStyles({
+            height: des_h*rate + 'px',
+            width: des_w*rate + 'px'
+        });
+    }
+
+    getWidth(ele:HTMLElement){
+        return parseFloat(ele.getCssPropertyValue('width'));
+    }
+
+    getHeight(ele:HTMLElement){
+        return parseFloat(ele.getCssPropertyValue('height'));
+    }
+
+    getDiagramElement(container: HTMLElement){
+        let diagramSvg = Array.from(container.children).find(child => child.tagName.toLowerCase() === 'svg');
+        if (diagramSvg){
+            return diagramSvg;
+        }
+
+        let diagramImg = Array.from(container.children).find(child => child.tagName.toLowerCase() === 'img');
+        if (diagramImg)
+            return diagramImg;
+
+        return null;
     }
 
     makeButtonDraggable(button: HTMLElement, mermaidDiv: HTMLElement, onDragStart: () => void) {
@@ -289,10 +369,11 @@ export default class MermaidPopupPlugin extends Plugin {
     IsClassListContains_SettingsDiagramClass(ele:HTMLElement){
         if (ele.classList == null || ele.classList.length == 0)
             return false;
-        let mergedMap = this.GetSettingsDiagramClassAll();
-        for(var i=0;i<ele.classList.length;i++)
-        {
-            if (Object.values(mergedMap).includes('.' + ele.classList[i]))
+        let classnameArr = this.GetSettingsDiagramClassNameAll();
+        for(var i=0;i<classnameArr.length;i++){
+            let name = classnameArr[i];
+            name = name.substring(1);
+            if (ele.classList.contains(name))
                 return true;
         }
         return false;
@@ -345,6 +426,59 @@ export default class MermaidPopupPlugin extends Plugin {
 
         let _doc = targetElementInPopup.doc;
         // Create a container for the control buttons
+        let _buttonContainer = this.createButtonContainer(_doc, targetElementInPopup, overlay);
+
+        // Append popup and button container to the overlay
+        overlay.appendChild(targetElementInPopup);
+        overlay.appendChild(_buttonContainer);
+        _doc.body.appendChild(overlay);
+
+        // Close popup on overlay click
+        overlay.addEventListener('click', (evt) => {
+            evt.doc.body.removeChild(overlay);
+        });
+
+        // Stop propagation to prevent closing when clicking on popup content
+        targetElementInPopup.addEventListener('click', (evt) => {
+            evt.stopPropagation();
+        });
+
+        // Listen for the Escape key to close the popup
+        targetElementInPopup.doc.addEventListener('keydown', (evt) => {
+            if (evt.key === 'Escape') {
+                targetElementInPopup.doc.body.removeChild(overlay);
+            }
+        });    
+        
+        this.setPopupSize(targetElementInPopup);
+
+        // Make the popup draggable
+        this.makeDraggable(targetElementInPopup);
+
+        // Make the popup resizable
+        targetElementInPopup.classList.add('resizable');
+
+        // Add mouse wheel event for zooming
+        targetElementInPopup.addEventListener('wheel', (evt) => {
+            evt.preventDefault();
+            const isOut = evt.deltaY > 0;
+            this.zoomPopupAtCursor(targetElementInPopup, isOut, evt);
+        });
+    }
+    setPopupSize(_targetElementInPopup:HTMLElement){
+        let diagramElement = this.getDiagramElement(_targetElementInPopup) as HTMLElement;
+        let multiVal = parseFloat(this.settings.PopupSizeInitValue);
+        if (typeof multiVal == "number"){
+            let width = this.getWidth(diagramElement);
+            let height = this.getHeight(diagramElement);
+            diagramElement.setCssStyles({
+                width: width*multiVal + 'px',
+                height: height*multiVal + 'px'
+            });
+        }
+    }
+
+    createButtonContainer(_doc:Document, _targetElementInPopup:HTMLElement, _overlay:HTMLElement){
         const buttonContainer = _doc.createElement('div');
         buttonContainer.classList.add('button-container');
 
@@ -388,20 +522,6 @@ export default class MermaidPopupPlugin extends Plugin {
         buttonContainer.appendChild(rightButton);
         buttonContainer.appendChild(closeButton);
 
-        // Append popup and button container to the overlay
-        overlay.appendChild(targetElementInPopup);
-        overlay.appendChild(buttonContainer);
-        _doc.body.appendChild(overlay);
-
-        // Close popup on overlay click
-        overlay.addEventListener('click', (evt) => {
-            evt.doc.body.removeChild(overlay);
-        });
-
-        // Stop propagation to prevent closing when clicking on popup content
-        targetElementInPopup.addEventListener('click', (evt) => {
-            evt.stopPropagation();
-        });
 
         // Stop propagation to prevent closing when clicking on control buttons and container
         buttonContainer.addEventListener('click', (evt) => {
@@ -410,58 +530,39 @@ export default class MermaidPopupPlugin extends Plugin {
 
         zoomInButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.zoomPopup(targetElementInPopup, false);
+            this.zoomPopup(_targetElementInPopup, false);
         });
 
         zoomOutButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.zoomPopup(targetElementInPopup, true);
+            this.zoomPopup(_targetElementInPopup, true);
         });
 
         upButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.movePopup(targetElementInPopup, 0, -1);
+            this.movePopup(_targetElementInPopup, 0, -1);
         });
 
         downButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.movePopup(targetElementInPopup, 0, 1);
+            this.movePopup(_targetElementInPopup, 0, 1);
         });
 
         leftButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.movePopup(targetElementInPopup, -1, 0);
+            this.movePopup(_targetElementInPopup, -1, 0);
         });
 
         rightButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            this.movePopup(targetElementInPopup, 1, 0);
+            this.movePopup(_targetElementInPopup, 1, 0);
         });
 
         closeButton.addEventListener('click', (evt) => {
             evt.stopPropagation();
-            evt.doc.body.removeChild(overlay);
-        });
-
-        // Listen for the Escape key to close the popup
-        targetElementInPopup.doc.addEventListener('keydown', (evt) => {
-            if (evt.key === 'Escape') {
-                targetElementInPopup.doc.body.removeChild(overlay);
-            }
+            evt.doc.body.removeChild(_overlay);
         });        
-
-        // Make the popup draggable
-        this.makeDraggable(targetElementInPopup);
-
-        // Make the popup resizable
-        targetElementInPopup.classList.add('resizable');
-
-        // Add mouse wheel event for zooming
-        targetElementInPopup.addEventListener('wheel', (evt) => {
-            evt.preventDefault();
-            const isOut = evt.deltaY > 0;
-            this.zoomPopupAtCursor(targetElementInPopup, isOut, evt);
-        });
+        return buttonContainer;
     }
 
     // Helper method to move the popup
