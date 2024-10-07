@@ -21,8 +21,7 @@ class MermaidPopupSettingTab extends PluginSettingTab {
 
         const td_01_1_popup_sz_title = row_01_popup_sz_and_dg_h_title.createEl('td');
         let popup_sz_title = td_01_1_popup_sz_title.createEl('h2', { text: 'Popup Size Init' });
-        popup_sz_title.classList.add('config-text');
-
+        popup_sz_title.classList.add('config-text');      
         const td_02_1_popup_sz = row_02_popup_sz_and_dg_h_val.createEl('td');
         // 弹窗初始化
         new Setting(td_02_1_popup_sz)
@@ -43,8 +42,7 @@ class MermaidPopupSettingTab extends PluginSettingTab {
 
         let td_01_2_dg_h= row_01_popup_sz_and_dg_h_title.createEl('td');
         let td_02_1_dg_h_title = td_01_2_dg_h.createEl('h2', { text: 'Original Diagram Height' });
-        td_02_1_dg_h_title.classList.add('config-text');          
-        
+        td_02_1_dg_h_title.classList.add('config-text');         
         const td_02_2_dg_h_val = row_02_popup_sz_and_dg_h_val.createEl('td');
         td_02_2_dg_h_val.classList.add('ori_diagram_height');
         let dg_h_val = this.plugin.settings.DiagramHeightVal; 
@@ -77,14 +75,23 @@ class MermaidPopupSettingTab extends PluginSettingTab {
             this.plugin.settings.DiagramHeightVal = value;
             this.plugin.saveSettings();
         });
-
-        this.setInfo(td_02_2_dg_h_val, 'Click for tips on Original Diagram Height Setting.',
-            'Original Diagram Height Setting',
-            'Under proportional scaling, ' +
+        const addSettings = new Setting(td_02_2_dg_h_val);
+        addSettings.addExtraButton((extra) => {
+            extra.setIcon('info');
+            extra.setTooltip(
+                'Click for tips on Original Diagram Height Setting.'
+            );
+            extra.onClick(() => {
+                let msgModal = new Modal(this.app);
+                msgModal.setTitle('Original Diagram Height Setting');
+                msgModal.setContent('Under proportional scaling, ' +
                     'adapt to the width of editor, ' + 
                     'and then if the height is still greater than the value of \'Original Diagram Height\',' + 
-                    'it will adapt again. '
-        )          
+                    'it will adapt again. ');
+                msgModal.open();
+            });
+            extra.extraSettingsEl.closest('.setting-item')?.classList.add('settings-icon');
+        });
 
         const row_1 = tbody.createEl('tr');
         const row_2 = tbody.createEl('tr');
@@ -133,20 +140,6 @@ class MermaidPopupSettingTab extends PluginSettingTab {
             
             )
         });  
-
-        // 开启弹窗按钮位置
-        let title_btn_pos = containerEl.createEl('h2', { text: 'Open Popup Button Relative Position Init' });
-        title_btn_pos.classList.add('config-text');   
-        
-        const kvRow_open_btn = containerEl.createDiv({ cls: 'kv-row open_btn_pos' });
-        this.slideInput(kvRow_open_btn, "x:", this.plugin.settings.open_btn_pos_x,  (val)=>{this.plugin.settings.open_btn_pos_x=val});
-        this.slideInput(kvRow_open_btn, "y:", this.plugin.settings.open_btn_pos_y, (val)=>{this.plugin.settings.open_btn_pos_y=val});
-
-        this.setInfo(kvRow_open_btn, 'Click for tips on Open Popup Button Relative Position Init Setting.',
-            'Open Popup Button Relative Position Init Setting',
-            'The origin of open popup button relative position, is at top left of the diagram container.' +
-                    'In the setting, x represents the width ratio from the origin, and y represents the height ratio from that.'
-        ) 
 
         let title = containerEl.createEl('h2', { text: 'Add New Diagram' });
         title.classList.add('config-text');
@@ -221,59 +214,6 @@ class MermaidPopupSettingTab extends PluginSettingTab {
 
         containerEl.createEl('p', { text: '\'.diagram-popup\' is a preserved class for other plugins to work with.' })
         containerEl.createEl('p', { text: 'if you add it to the class list of your target container, it will get the functionality.' });
-    }
-
-    setInfo(containerEl: HTMLElement, tip:string, title:string, msg:string){
-        const addSettings = new Setting(containerEl);
-        addSettings.addExtraButton((extra) => {
-            extra.setIcon('info');
-            extra.setTooltip(tip);
-            extra.onClick(() => {
-                let msgModal = new Modal(this.app);
-                msgModal.setTitle(title);
-                msgModal.setContent(msg);
-                msgModal.open();
-            });
-            extra.extraSettingsEl.closest('.setting-item')?.classList.add('settings-icon');
-        });  
-    }
-
-    slideInput(containerEl: HTMLElement, title:string, value: string, saveVal:(newVal:string)=>void){
-        let input_title = containerEl.createEl('p');
-        input_title.classList.add('open_btn_pos_slide_title');
-        input_title.setText(title);
-
-        let input_val_min = containerEl.createEl('p');
-        input_val_min.setText('0');
-
-        let input = containerEl.createEl('input');
-        input.classList.add('open_btn_pos_slide_width');
-        
-        input.setAttribute('type','range');
-        input.setAttribute('min','0');
-        input.setAttribute('max','100');
-        input.setAttribute('step','10');
-        input.setAttribute('value',value);  
-
-        let input_val_max = containerEl.createEl('p');
-        input_val_max.setText('100%');
-
-        let input_val_cur_title = containerEl.createEl('p',  {text:'current:'});
-        input_val_cur_title.classList.add('open_btn_pos_cur_title');
-        let input_val_cur = containerEl.createEl('p');
-        input_val_cur.classList.add('open_btn_pos_cur_val');
-        input_val_cur.setText(value);
-        let input_val_cur_per = containerEl.createEl('p');
-        input_val_cur_per.setText('%');
-        input_val_cur_per.classList.add('open_btn_pos_cur_per');
-
-        // 监听 input 事件
-        input.addEventListener('input', (event) => {
-            const value = input.value; // 获取当前值
-            input_val_cur.setText(value + ''); // 更新显示
-            saveVal(value);
-            this.plugin.saveSettings();
-        });      
     }
 
     // 在页面下方显示所有保存的键值对（以表格形式）

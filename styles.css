@@ -74,6 +74,8 @@ cursor: grabbing; /* 拖动时鼠标变为抓手 */
 
 button.mermaid-popup-button {
     position: fixed;;
+    bottom: 10px;
+    right: 10px;
     background-color: rgba(0, 0, 0, 0.1); /* 半透明 */
     color: var(--text-normal);
     border: none;
@@ -90,6 +92,8 @@ button.mermaid-popup-button:hover {
 
 button.mermaid-popup-button-reading {
     position: absolute;;
+    bottom: 10px;
+    right: 10px;
     background-color: rgba(0, 0, 0, 0.1); /* 半透明 */
     color: var(--text-normal);
     border: none;
@@ -194,28 +198,6 @@ button.mermaid-popup-button-reading:hover {
 }
 
 .setting-table .settings-icon{
-    display: block;
-    border-top: 0px;
-}
-
-.open_btn_pos_slide_title{
-    margin-right: 5px !important;
-}
-
-.open_btn_pos_slide_width{
-    width: 20% !important;
-}
-.open_btn_pos_cur_title{
-    margin-left: 20px;
-}
-.open_btn_pos_cur_val{
-    width: 30px;
-}
-.open_btn_pos_cur_per{
-    margin-right: 30px;
-}
-
-.open_btn_pos .settings-icon{
     display: block;
     border-top: 0px;
 }
