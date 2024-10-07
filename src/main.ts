@@ -18,6 +18,9 @@ interface MermaidPopupSetting {
     kvMapZoomRatio: Record<string, string>;
     MoveStepValue:string;
     kvMapMoveStep: Record<string, string>;
+
+    open_btn_pos_x:string;
+    open_btn_pos_y:string;
 };
 
 const DEFAULT_SETTINGS: MermaidPopupSetting = {
@@ -56,7 +59,9 @@ const DEFAULT_SETTINGS: MermaidPopupSetting = {
         '40':'40',
         '50':'60',
         '60':'60',
-    },    
+    },
+    open_btn_pos_x:'90',
+    open_btn_pos_y:'90',
 };
 
 export default class MermaidPopupPlugin extends Plugin {
@@ -232,6 +237,7 @@ export default class MermaidPopupPlugin extends Plugin {
         target.appendChild(popupButton);
 
         this.adjustDiagramWidthAndHeight_ToContainer(target);
+        this.setPopupBtnPos(popupButton, target);
 
         // bind click to popup
         this.registerDomEvent(target, 'click', this.handleMermaidClick);
@@ -252,6 +258,32 @@ export default class MermaidPopupPlugin extends Plugin {
         // Make the button draggable
         this.makeButtonDraggable(popupButton, target, () => {
             isDragging = true; // Set dragging to true during the drag
+        });
+    }
+
+    setPopupBtnPos(btn: HTMLElement, target: HTMLElement){
+        let w_b = btn.offsetWidth;
+        let h_b = btn.offsetHeight;
+        console.log('w_b', w_b, 'h_b', h_b);
+  
+        let w = target.offsetWidth;
+        let h = target.offsetHeight;
+
+        let x_setting = this.settings.open_btn_pos_x;
+        let y_setting = this.settings.open_btn_pos_y;
+
+        let left = this.getWidth(target) * parseFloat(x_setting) / 100;
+        let top = this.getHeight(target) * parseFloat(y_setting) / 100
+
+        left = (left+w_b) > w ? (left-w_b) : left;
+        top = (top+h_b) > h ? (top-h_b) : top;
+
+        left = left < 0 ? 0 : left;
+        top = top < 0 ? 0 : top;
+
+        btn.setCssStyles({
+            left: left + 'px',
+            top: top + 'px'
         });
     }
 
