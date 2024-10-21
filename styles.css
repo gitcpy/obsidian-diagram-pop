@@ -46,10 +46,7 @@
 
 /*开启弹窗按钮*/
 .mermaid-popup-button-container, .mermaid-popup-button-container-reading {
-    position: relative !important;
-    display: flex;
-    justify-content: center;
-    align-items: center;    
+    position: relative !important; 
 }
 
 button.mermaid-popup-button {
