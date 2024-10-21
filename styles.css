@@ -12,12 +12,10 @@
     z-index: 1000; /* Ensure the overlay is on top */
 }
 .popup-content {
-   
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); */
-
-    /* Ensure scaling is centered */
-    /* transform-origin: center; */
     z-index: 1001;
     cursor: pointer; /* 悬停时鼠标变为手掌 */
 }
@@ -49,6 +47,9 @@
 /*开启弹窗按钮*/
 .mermaid-popup-button-container, .mermaid-popup-button-container-reading {
     position: relative !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;    
 }
 
 button.mermaid-popup-button {

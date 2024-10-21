@@ -270,7 +270,7 @@ export default class MermaidPopupPlugin extends Plugin {
     setPopupBtnPos(btn: HTMLElement, target: HTMLElement){
         let w_b = btn.offsetWidth;
         let h_b = btn.offsetHeight;
-        console.log('w_b', w_b, 'h_b', h_b);
+        //console.log('w_b', w_b, 'h_b', h_b);
   
         let w = target.offsetWidth;
         let h = target.offsetHeight;
@@ -523,23 +523,35 @@ export default class MermaidPopupPlugin extends Plugin {
         });
     }
     setPopupSize(_targetElementInPopup:HTMLElement, _targetElement:HTMLElement){
-
-
         let multiVal = parseFloat(this.settings.PopupSizeInitValue);
         if (typeof multiVal != "number"){
             return;
         }
 
+        let width_tar_md = this.getWidth(_targetElement);
+        let height_tar_md = this.getHeight(_targetElement);   
         let _diag_md = this.getDiagramElement(_targetElement) as HTMLElement;
         let width_diag_md = this.getWidth(_diag_md);
         let height_diag_md = this.getHeight(_diag_md);
 
+        let width_tar_inpopup = this.getWidth(_targetElementInPopup);
+        let height_tar_inpopup = this.getHeight(_targetElementInPopup);   
+        let _diag_inpopup = this.getDiagramElement(_targetElementInPopup) as HTMLElement;
+        let width_diag_inpopup = this.getWidth(_diag_inpopup);
+        let height_diag_inpopup = this.getHeight(_diag_inpopup);
 
-        let w_t = this.getWidth(_targetElementInPopup);
-        let h_t = this.getHeight(_targetElementInPopup);
-        let scale_num = width_diag_md*multiVal / w_t;
         _targetElementInPopup.setCssStyles({
-            transform: `scale(${scale_num})`
+            width: width_tar_md + 'px',
+            height: height_tar_md + 'px'
+        });
+
+        _diag_inpopup.setCssStyles({
+            width: width_diag_md + 'px',
+            height: height_diag_md + 'px'
+        });
+
+        _targetElementInPopup.setCssStyles({
+            transform: `scale(${multiVal})`
         });
     }
 
