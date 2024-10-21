@@ -1,6 +1,6 @@
 {
   "kvMap": {
-    "Mindmap NextGen": ".block-language-markmap"
+    "Mindmap Nextgen": ".block-language-markmap"
   },
   "kvMapDefault": {
     "Mermaid": ".mermaid"
@@ -8,13 +8,17 @@
   "kvMapReserved": {
     "Reserved": ".diagram-popup"
   },
-  "PopupSizeInitValue": "1.5",
+  "PopupSizeInitValue": "1.50",
   "kvMapPopupSizeInit": {
-    "1.0": "1.0",
-    "1.5": "1.5",
-    "2.0": "2.0",
-    "2.5": "2.5",
-    "3.0": "3.0"
+    "1.00": "1.00",
+    "1.25": "1.25",
+    "1.50": "1.50",
+    "1.75": "1.75",
+    "2.00": "2.00",
+    "2.25": "2.25",
+    "2.50": "2.50",
+    "2.75": "2.75",
+    "3.00": "3.00"
   },
   "DiagramHeightVal": "600",
   "DiagramHeightMin": "50",

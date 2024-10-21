@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "e53024ed487f36f6",
+        "id": "f3d44752eef07d91",
         "type": "tabs",
         "children": [
           {
-            "id": "ceee8ec278b26bf2",
+            "id": "b7d85c8b601652f8",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -162,8 +162,9 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "ceee8ec278b26bf2",
+  "active": "b7d85c8b601652f8",
   "lastOpenFiles": [
-    "Test Diagram.md"
+    "Test Diagram.md",
+    "Untitled.md"
   ]
 }

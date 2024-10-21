@@ -286,13 +286,17 @@ const DEFAULT_SETTINGS = {
     kvMapReserved: {
         'Reserved': '.diagram-popup'
     },
-    PopupSizeInitValue: '1.5',
+    PopupSizeInitValue: '1.50',
     kvMapPopupSizeInit: {
-        '1.0': '1.0',
-        '1.5': '1.5',
-        '2.0': '2.0',
-        '2.5': '2.5',
-        '3.0': '3.0'
+        '1.00': '1.00',
+        '1.25': '1.25',
+        '1.50': '1.50',
+        '1.75': '1.75',
+        '2.00': '2.00',
+        '2.25': '2.25',
+        '2.50': '2.50',
+        '2.75': '2.75',
+        '3.00': '3.00'
     },
     DiagramHeightVal: '600',
     DiagramHeightMin: '50',
@@ -320,6 +324,8 @@ class MermaidPopupPlugin extends obsidian.Plugin {
     settings;
     observer_editting;
     observer_reading;
+    openPopupBtn = 'mermaid-popup-button';
+    openPopupBtnReading = 'mermaid-popup-button-reading';
     async onload() {
         console.log(`Loading ${this.manifest.name} ${this.manifest.version}`);
         // 加载设置
@@ -636,9 +642,15 @@ class MermaidPopupPlugin extends obsidian.Plugin {
         // copy target
         let targetElementClone = targetElement.cloneNode(true);
         let targetElementInPopup = targetElementClone;
-        const childElement = targetElementInPopup.querySelector('.mermaid-popup-button'); // 获取需要删除的子元素
+        let childElement = targetElementInPopup.querySelector('.' + this.openPopupBtn); // 获取需要删除的子元素
         if (childElement) {
             targetElementInPopup.removeChild(childElement); // 从父元素中删除子元素
+        }
+        else {
+            childElement = targetElementInPopup.querySelector('.' + this.openPopupBtnReading);
+            if (childElement) {
+                targetElementInPopup.removeChild(childElement);
+            }
         }
         targetElementInPopup.classList.add('popup-content', 'draggable', 'resizable');
         let _doc = targetElementInPopup.doc;
@@ -662,7 +674,7 @@ class MermaidPopupPlugin extends obsidian.Plugin {
                 targetElementInPopup.doc.body.removeChild(overlay);
             }
         });
-        this.setPopupSize(targetElementInPopup);
+        this.setPopupSize(targetElementInPopup, this.getWidth(targetElement), this.getHeight(targetElement));
         // Make the popup draggable
         this.makeDraggable(targetElementInPopup);
         // Make the popup resizable
@@ -674,17 +686,17 @@ class MermaidPopupPlugin extends obsidian.Plugin {
             this.zoomPopupAtCursor(targetElementInPopup, isOut, evt);
         });
     }
-    setPopupSize(_targetElementInPopup) {
-        let diagramElement = this.getDiagramElement(_targetElementInPopup);
+    setPopupSize(_targetElementInPopup, width_md, height_md) {
         let multiVal = parseFloat(this.settings.PopupSizeInitValue);
-        if (typeof multiVal == "number") {
-            let width = this.getWidth(diagramElement);
-            let height = this.getHeight(diagramElement);
-            diagramElement.setCssStyles({
-                width: width * multiVal + 'px',
-                height: height * multiVal + 'px'
-            });
+        if (typeof multiVal != "number") {
+            return;
         }
+        let w_t = this.getWidth(_targetElementInPopup);
+        this.getHeight(_targetElementInPopup);
+        let scale_num = width_md * multiVal / w_t;
+        _targetElementInPopup.setCssStyles({
+            transform: `scale(${scale_num})`
+        });
     }
     createButtonContainer(_doc, _targetElementInPopup, _overlay) {
         const buttonContainer = _doc.createElement('div');
