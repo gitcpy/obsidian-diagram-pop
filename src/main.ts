@@ -507,7 +507,7 @@ export default class MermaidPopupPlugin extends Plugin {
             }
         });    
         
-        this.setPopupSize(targetElementInPopup, this.getWidth(targetElement), this.getHeight(targetElement));
+        this.setPopupSize(targetElementInPopup, targetElement);
 
         // Make the popup draggable
         this.makeDraggable(targetElementInPopup);
@@ -522,15 +522,22 @@ export default class MermaidPopupPlugin extends Plugin {
             this.zoomPopupAtCursor(targetElementInPopup, isOut, evt);
         });
     }
-    setPopupSize(_targetElementInPopup:HTMLElement, width_md:number, height_md:number){
+    setPopupSize(_targetElementInPopup:HTMLElement, _targetElement:HTMLElement){
+
+
         let multiVal = parseFloat(this.settings.PopupSizeInitValue);
         if (typeof multiVal != "number"){
             return;
         }
 
+        let _diag_md = this.getDiagramElement(_targetElement) as HTMLElement;
+        let width_diag_md = this.getWidth(_diag_md);
+        let height_diag_md = this.getHeight(_diag_md);
+
+
         let w_t = this.getWidth(_targetElementInPopup);
         let h_t = this.getHeight(_targetElementInPopup);
-        let scale_num = width_md*multiVal / w_t;
+        let scale_num = width_diag_md*multiVal / w_t;
         _targetElementInPopup.setCssStyles({
             transform: `scale(${scale_num})`
         });
