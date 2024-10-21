@@ -31,13 +31,17 @@ const DEFAULT_SETTINGS: MermaidPopupSetting = {
     kvMapReserved:{
         'Reserved': '.diagram-popup'
     },
-    PopupSizeInitValue:'1.5',
+    PopupSizeInitValue:'1.50',
     kvMapPopupSizeInit:{
-        '1.0':'1.0',
-        '1.5':'1.5',
-        '2.0':'2.0',
-        '2.5':'2.5',
-        '3.0':'3.0'        
+        '1.00':'1.00',
+        '1.25':'1.25',        
+        '1.50':'1.50',
+        '1.75':'1.75',
+        '2.00':'2.00',
+        '2.25':'2.25',        
+        '2.50':'2.50',
+        '2.75':'2.75',
+        '3.00':'3.00'        
     },
 
     DiagramHeightVal:'600',
@@ -68,6 +72,8 @@ export default class MermaidPopupPlugin extends Plugin {
     settings!: MermaidPopupSetting;
     observer_editting!:MutationObserver | null;
     observer_reading!:MutationObserver | null; 
+    openPopupBtn='mermaid-popup-button';
+    openPopupBtnReading='mermaid-popup-button-reading';
 
     async onload() {
         console.log(`Loading ${this.manifest.name} ${this.manifest.version}`);
@@ -264,7 +270,7 @@ export default class MermaidPopupPlugin extends Plugin {
     setPopupBtnPos(btn: HTMLElement, target: HTMLElement){
         let w_b = btn.offsetWidth;
         let h_b = btn.offsetHeight;
-        console.log('w_b', w_b, 'h_b', h_b);
+        //console.log('w_b', w_b, 'h_b', h_b);
   
         let w = target.offsetWidth;
         let h = target.offsetHeight;
@@ -463,10 +469,16 @@ export default class MermaidPopupPlugin extends Plugin {
         // copy target
         let targetElementClone = targetElement.cloneNode(true);
         let targetElementInPopup = targetElementClone as HTMLElement;
-        const childElement = targetElementInPopup.querySelector('.mermaid-popup-button'); // 获取需要删除的子元素
+        let childElement = targetElementInPopup.querySelector('.' + this.openPopupBtn); // 获取需要删除的子元素
         if (childElement) {
             targetElementInPopup.removeChild(childElement); // 从父元素中删除子元素
-        }        
+        }
+        else{
+            childElement = targetElementInPopup.querySelector('.' + this.openPopupBtnReading); 
+            if (childElement) {
+                targetElementInPopup.removeChild(childElement); 
+            }        
+        }
         targetElementInPopup.classList.add('popup-content', 'draggable', 'resizable');
 
         let _doc = targetElementInPopup.doc;
@@ -495,7 +507,7 @@ export default class MermaidPopupPlugin extends Plugin {
             }
         });    
         
-        this.setPopupSize(targetElementInPopup);
+        this.setPopupSize(targetElementInPopup, targetElement);
 
         // Make the popup draggable
         this.makeDraggable(targetElementInPopup);
@@ -510,17 +522,37 @@ export default class MermaidPopupPlugin extends Plugin {
             this.zoomPopupAtCursor(targetElementInPopup, isOut, evt);
         });
     }
-    setPopupSize(_targetElementInPopup:HTMLElement){
-        let diagramElement = this.getDiagramElement(_targetElementInPopup) as HTMLElement;
+    setPopupSize(_targetElementInPopup:HTMLElement, _targetElement:HTMLElement){
         let multiVal = parseFloat(this.settings.PopupSizeInitValue);
-        if (typeof multiVal == "number"){
-            let width = this.getWidth(diagramElement);
-            let height = this.getHeight(diagramElement);
-            diagramElement.setCssStyles({
-                width: width*multiVal + 'px',
-                height: height*multiVal + 'px'
-            });
+        if (typeof multiVal != "number"){
+            return;
         }
+
+        let width_tar_md = this.getWidth(_targetElement);
+        let height_tar_md = this.getHeight(_targetElement);   
+        let _diag_md = this.getDiagramElement(_targetElement) as HTMLElement;
+        let width_diag_md = this.getWidth(_diag_md);
+        let height_diag_md = this.getHeight(_diag_md);
+
+        let width_tar_inpopup = this.getWidth(_targetElementInPopup);
+        let height_tar_inpopup = this.getHeight(_targetElementInPopup);   
+        let _diag_inpopup = this.getDiagramElement(_targetElementInPopup) as HTMLElement;
+        let width_diag_inpopup = this.getWidth(_diag_inpopup);
+        let height_diag_inpopup = this.getHeight(_diag_inpopup);
+
+        _targetElementInPopup.setCssStyles({
+            width: width_tar_md + 'px',
+            height: height_tar_md + 'px'
+        });
+
+        _diag_inpopup.setCssStyles({
+            width: width_diag_md + 'px',
+            height: height_diag_md + 'px'
+        });
+
+        _targetElementInPopup.setCssStyles({
+            transform: `scale(${multiVal})`
+        });
     }
 
     createButtonContainer(_doc:Document, _targetElementInPopup:HTMLElement, _overlay:HTMLElement){
