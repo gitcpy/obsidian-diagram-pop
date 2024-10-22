@@ -99,22 +99,25 @@ export default class MermaidPopupPlugin extends Plugin {
                 // 类型断言为 MarkdownView，以便访问 contentEl
                 const mode = view.getMode();
                 const isPreview = mode === 'preview';
-                //let container = view.containerEl.childNodes[1].childNodes[0] as HTMLElement; // 编辑容器
-                let container = view.containerEl.querySelector('.markdown-source-view') as HTMLElement; // 编辑容器
-                if (isPreview) {
-                    //container = view.containerEl.childNodes[1].childNodes[1] as HTMLElement; // 阅读容器
-                    container = view.containerEl.querySelector('.markdown-preview-view') as HTMLElement; // 阅读容器
-                }
 
+                let containerClass = '.markdown-source-view';// 编辑容器
+                if (isPreview) {
+                    containerClass = '.markdown-preview-view'; // 阅读容器
+                }
+                let container = view.containerEl.querySelector(containerClass) as HTMLElement;
                 let targetArr = this.GetSettingsClassElementAll(container)
                 for(var i=0;i<targetArr.length;i++)
                 {
                     this.addPopupButton(targetArr[i] as HTMLElement, isPreview);
                     this.ObserveIsChnanged(targetArr[i] as HTMLElement, isPreview);
                 }
-                this.ObserveToAddPopupButton(container, isPreview);
 
-                //this.ObserveToAddPopupButton(view.containerEl, false);
+                if (isPreview) {
+                    this.ObserveToAddPopupButton_Reading(container, isPreview);
+                }
+                else{
+                    this.ObserveToAddPopupButton(container, isPreview);
+                }
             }
         }));
     }
