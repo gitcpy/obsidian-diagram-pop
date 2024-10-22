@@ -86,6 +86,7 @@ export default class MermaidPopupPlugin extends Plugin {
 
         this.registerMarkdownPostProcessor((element, context) => {
             //this.registerMarkdownPostProcessor_MermaidPopup(element);
+            console.log('registerMarkdownPostProcessor');
         });
       
         // 监听模式切换事件
@@ -103,18 +104,15 @@ export default class MermaidPopupPlugin extends Plugin {
                 if (isPreview) {
                     //container = view.containerEl.childNodes[1].childNodes[1] as HTMLElement; // 阅读容器
                     container = view.containerEl.querySelector('.markdown-preview-view') as HTMLElement; // 阅读容器
-
-                    let targetArr = this.GetSettingsClassElementAll(container)
-                    for(var i=0;i<targetArr.length;i++)
-                        this.addPopupButton(targetArr[i] as HTMLElement, isPreview);
-                    this.ObserveToAddPopupButton_Reading(container, isPreview);
-                    return;
                 }
 
                 let targetArr = this.GetSettingsClassElementAll(container)
                 for(var i=0;i<targetArr.length;i++)
-                    this.addPopupButton(targetArr[i] as HTMLElement);
-                this.ObserveToAddPopupButton(container);
+                {
+                    this.addPopupButton(targetArr[i] as HTMLElement, isPreview);
+                    this.ObserveIsChnanged(targetArr[i] as HTMLElement, isPreview);
+                }
+                this.ObserveToAddPopupButton(container, isPreview);
 
                 //this.ObserveToAddPopupButton(view.containerEl, false);
             }
@@ -153,6 +151,21 @@ export default class MermaidPopupPlugin extends Plugin {
         if (parentElement) {
             this.addPopupButton(parentElement, false);
         }   
+    }
+
+    ObserveIsChnanged(targetNode:HTMLElement, isPreviewMode:boolean = false){
+        const config = { childList: true, subtree: true };
+        const callback = (mutationsList:MutationRecord[], observer:MutationObserver) => {
+            let mutation = mutationsList[mutationsList.length-1];
+            if (mutation.type === 'childList') {
+                let nodeEle = mutation.target as HTMLElement;
+                if(this.IsClassListContains_SettingsDiagramClass(nodeEle))
+                    this.addPopupButton(nodeEle, isPreviewMode);
+            }
+        };
+
+        const observer = new MutationObserver(callback);
+        observer.observe(targetNode, config);
     }
 
     ObserveToAddPopupButton(myView: HTMLElement, isPreviewMode:boolean = false){

@@ -73,7 +73,7 @@ const productionConfig = {
             ],
         }),
         terser({
-            compress: true,
+            compress: false,
             mangle: true,
         }),
         visualizer({
