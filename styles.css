@@ -45,12 +45,16 @@
 }
 
 /*开启弹窗按钮*/
-.mermaid-popup-button-container, .mermaid-popup-button-container-reading {
+.mermaid-popup-button-container {
+    position: relative !important; 
+}
+
+.mermaid-popup-button-container-reading {
     position: relative !important; 
 }
 
 button.mermaid-popup-button {
-    position: fixed;;
+    position: fixed;  
     background-color: rgba(0, 0, 0, 0.1); /* 半透明 */
     color: var(--text-normal);
     border: none;
@@ -66,7 +70,7 @@ button.mermaid-popup-button:hover {
 }
 
 button.mermaid-popup-button-reading {
-    position: absolute;;
+    position: absolute !important;
     background-color: rgba(0, 0, 0, 0.1); /* 半透明 */
     color: var(--text-normal);
     border: none;

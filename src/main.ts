@@ -84,10 +84,10 @@ export default class MermaidPopupPlugin extends Plugin {
         // 添加设置页面
         this.addSettingTab(new MermaidPopupSettingTab(this.app, this));
 
-        this.registerMarkdownPostProcessor((element, context) => {
-            //this.registerMarkdownPostProcessor_MermaidPopup(element);
-            console.log('registerMarkdownPostProcessor');
-        });
+        // this.registerMarkdownPostProcessor((element, context) => {
+        //     //this.registerMarkdownPostProcessor_MermaidPopup(element);
+        //     //console.log('registerMarkdownPostProcessor');
+        // });
       
         // 监听模式切换事件
         this.registerEvent(this.app.workspace.on('layout-change', () => {
@@ -144,8 +144,7 @@ export default class MermaidPopupPlugin extends Plugin {
 
     isPreviewMode(){
         let view = this.app.workspace.getActiveViewOfType(MarkdownView);
-        let mode = view?.getViewType();
-        return mode == "preview";
+        return view && view.getViewType() === 'markdown' && view.getMode() == "preview";
     }
 
     // 渲染直接生成，可直接判断添加按钮和弹窗事件
@@ -156,19 +155,48 @@ export default class MermaidPopupPlugin extends Plugin {
         }   
     }
 
+    // targetNode ：target diagram
     ObserveIsChnanged(targetNode:HTMLElement, isPreviewMode:boolean = false){
         const config = { childList: true, subtree: true };
         const callback = (mutationsList:MutationRecord[], observer:MutationObserver) => {
-            let mutation = mutationsList[mutationsList.length-1];
-            if (mutation.type === 'childList') {
-                let nodeEle = mutation.target as HTMLElement;
-                if(this.IsClassListContains_SettingsDiagramClass(nodeEle))
-                    this.addPopupButton(nodeEle, isPreviewMode);
-            }
+            // if (!targetNode.classList.contains('open_btn_pos'))
+            // {
+            //     targetNode.classList.add('open_btn_pos')
+            //     this.removeOpenBtn(targetNode);
+            //     this.addPopupButton(targetNode, isPreviewMode);
+            // }
+
+            // let {popupButtonClass, popupButtonClass_container} = this.getOpenBtnInMd_Mark();
+            // let btn = targetNode.getElementsByClassName(popupButtonClass);
+            // if(btn && btn.length >0){
+            //     targetNode.classList.add('open_btn_pos')
+            //     this.removeOpenBtn(targetNode);
+            // }
+            // this.addPopupButton(targetNode, isPreviewMode);
         };
 
         const observer = new MutationObserver(callback);
         observer.observe(targetNode, config);
+    }
+
+    removeOpenBtn(targetNode:HTMLElement){
+        let {popupButtonClass, popupButtonClass_container} = this.getOpenBtnInMd_Mark();
+        targetNode.classList.remove(popupButtonClass_container);
+        let btn = targetNode.getElementsByClassName(popupButtonClass);
+        if(!btn || btn.length < 1)
+            return;
+        targetNode.removeChild(btn[0] as Node);
+    }
+
+    // 获取 
+    getOpenBtnInMd_Mark(){
+        let popupButtonClass = 'mermaid-popup-button';
+        let popupButtonClass_container = 'mermaid-popup-button-container';
+        if (this.isPreviewMode()){
+            popupButtonClass_container = 'mermaid-popup-button-container-reading';
+            popupButtonClass = 'mermaid-popup-button-reading'
+        }
+        return {popupButtonClass, popupButtonClass_container}
     }
 
     ObserveToAddPopupButton(myView: HTMLElement, isPreviewMode:boolean = false){
@@ -180,23 +208,18 @@ export default class MermaidPopupPlugin extends Plugin {
                 if (mutation.type !== "childList") {
                     continue;
                 }
-                if (mutation.addedNodes.length < 1) {
-                    continue;
+
+                let target = mutation.target as HTMLElement;
+                if(this.IsClassListContains_SettingsDiagramClass(target))
+                    this.addPopupButton(target, isPreviewMode);   
+
+                for(let i=0;i<mutation.addedNodes.length;i++){
+                    let nodeEle = mutation.addedNodes[i] as HTMLElement;
+                    if(this.IsClassListContains_SettingsDiagramClass(nodeEle))
+                        this.addPopupButton(nodeEle, isPreviewMode);                   
                 }
 
-                // let target = mutation.target as HTMLElement;
-                // let container = this.GetSettingsClassElement(target);
-                // if (!container)
-                //     return;
-                // this.addPopupButton(container as HTMLElement, isPreviewMode);    
-                
-                mutation.addedNodes.forEach(
-                    (node)=>{
-                        let nodeEle = node as HTMLElement;
-                        if(this.IsClassListContains_SettingsDiagramClass(nodeEle))
-                            this.addPopupButton(nodeEle, isPreviewMode);
-                    }
-                );  
+            
             }
         });
 
