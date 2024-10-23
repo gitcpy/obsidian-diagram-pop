@@ -72,6 +72,8 @@ export default class MermaidPopupPlugin extends Plugin {
     settings!: MermaidPopupSetting;
     observer_editting!:MutationObserver | null;
     observer_reading!:MutationObserver | null; 
+
+    class_editBlockBtn = 'edit-block-button';
     class_openPopupBtn='mermaid-popup-button';
     class_openPopupBtnReading='mermaid-popup-button-reading';
     class_openPopupBtn_container='mermaid-popup-button-container';
@@ -104,7 +106,7 @@ export default class MermaidPopupPlugin extends Plugin {
       
         // 监听模式切换事件
         this.registerEvent(this.app.workspace.on('layout-change', () => {
-            console.log('layout-change', Date());debugger
+            console.log('layout-change', Date());
             let view = this.app.workspace.getActiveViewOfType(MarkdownView);
             if (!view){ // 编辑器关闭
                 this.RelaseWhenfileClose();
@@ -209,7 +211,7 @@ export default class MermaidPopupPlugin extends Plugin {
                 this.addPopupButton(target, isPreviewMode);
             }
             else{
-                this.setPopupBtnPos(popupButton as HTMLElement, target);
+                //this.setPopupBtnPos(popupButton as HTMLElement, target);
             }
         }
         else{
@@ -305,24 +307,23 @@ export default class MermaidPopupPlugin extends Plugin {
             popupButtonClass = 'mermaid-popup-button-reading'
         }
 
-        if (target.querySelector('.' + popupButtonClass)) 
+        let popupButton = target.previousElementSibling as HTMLElement;
+        // return if exist
+        if (popupButton){
+            this.adjustDiagramWidthAndHeight_ToContainer(target);
             return;
-
+        }
         // Create the popup button
-        const popupButton = target.doc.createElement('button');
-        
-        if (!target.classList.contains(popupButtonClass_container))
-            target.classList.add(popupButtonClass_container);
-
+        popupButton = target.doc.createElement('button');
         popupButton.classList.add(popupButtonClass);
         popupButton.textContent = 'Open Popup';
         setIcon(popupButton, 'maximize');
         popupButton.title = 'Open Popup';
 
-        target.appendChild(popupButton);
+        target.insertAdjacentElement('beforebegin', popupButton);
 
         this.adjustDiagramWidthAndHeight_ToContainer(target);
-        this.setPopupBtnPos(popupButton, target);
+        //this.setPopupBtnPos(popupButton, target);
 
         // bind click to popup
         this.registerDomEvent(target, 'click', this.handleMermaidClick);
