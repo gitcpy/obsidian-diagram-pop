@@ -129,11 +129,8 @@ export default class MermaidPopupPlugin extends Plugin {
                 }
                 for(var i=0;i<targetArr.length;i++)
                 {
-                    this.removeOpenBtn(targetArr[i] as HTMLElement);
                     this.addPopupButton(targetArr[i] as HTMLElement, isPreview);
-                    this.ObserveIsChnanged(targetArr[i] as HTMLElement, isPreview);
                     console.log('layout-change', 'targetArr ' + i, targetArr[i]);
-                   
                 }
 
                 if (isPreview) {
@@ -178,55 +175,7 @@ export default class MermaidPopupPlugin extends Plugin {
             this.addPopupButton(parentElement, false);
         }   
     }
-    // some target element not render
-    // monitor render and ajust the pos of open btn
-    // targetNode ：target diagram
-    ObserveIsChnanged(targetNode:HTMLElement, isPreviewMode:boolean = false){
-        const config = { childList: true, subtree: true };
-        let observer = null
-        const callback = (mutationsList:MutationRecord[], observer:MutationObserver) => {
 
-            // for(let i=0;i<mutationsList.length;i++){
-            //     let mutation = mutationsList[i];
-            //     if (mutation.type === 'childList') {
-            //         this.updateDiagramContainer(targetNode, isPreviewMode);
-            //     }                
-            // }
-
-            console.log('ObserveIsChnanged - targetNode',targetNode);
-        };
-
-        observer = new MutationObserver(callback);
-        observer.observe(targetNode, config);
-    }
-
-    updateDiagramContainer(target: HTMLElement, isPreviewMode:boolean = false){
-        let {popupButtonClass, popupButtonClass_container} = this.getOpenBtnInMd_Mark_ByParam(isPreviewMode);
-        if (target.classList.contains(popupButtonClass_container)){
-            // resize container and diagram
-            this.adjustDiagramWidthAndHeight_ToContainer(target);
-            // update btn pos
-            let popupButton = target.querySelector('.' + popupButtonClass)
-            if (!popupButton){
-                this.addPopupButton(target, isPreviewMode);
-            }
-            else{
-                //this.setPopupBtnPos(popupButton as HTMLElement, target);
-            }
-        }
-        else{
-            this.addPopupButton(target, isPreviewMode);
-        }
-    }
-
-    removeOpenBtn(targetNode:HTMLElement){
-        let {popupButtonClass, popupButtonClass_container} = this.getOpenBtnInMd_Mark();
-        targetNode.classList.remove(popupButtonClass_container);
-        let btn = targetNode.getElementsByClassName(popupButtonClass);
-        if(!btn || btn.length < 1)
-            return;
-        targetNode.removeChild(btn[0] as Node);
-    }
     getOpenBtnInMd_Mark_ByParam(isPreviewMode:boolean){
         let popupButtonClass = this.class_openPopupBtn;
         let popupButtonClass_container = this.class_openPopupBtn_container;
@@ -323,7 +272,6 @@ export default class MermaidPopupPlugin extends Plugin {
         target.insertAdjacentElement('beforebegin', popupButton);
 
         this.adjustDiagramWidthAndHeight_ToContainer(target);
-        //this.setPopupBtnPos(popupButton, target);
 
         // bind click to popup
         this.registerDomEvent(target, 'click', this.handleMermaidClick);
@@ -340,21 +288,16 @@ export default class MermaidPopupPlugin extends Plugin {
             // Reset the dragging flag after click
             isDragging = false;
         });
-    
-        // Make the button draggable
-        this.makeButtonDraggable(popupButton, target, () => {
-            isDragging = true; // Set dragging to true during the drag
-        });
     }
 
     setPopupBtnPos(btn: HTMLElement, target: HTMLElement){
-        console.log('setPopupBtnPos target', target)
-        let w_b = btn.offsetWidth;
-        let h_b = btn.offsetHeight;
+
+        let w_b = this.getWidth(btn);
+        let h_b = this.getHeight(btn);
         //console.log('w_b', w_b, 'h_b', h_b);
   
-        let w = target.offsetWidth;
-        let h = target.offsetHeight;
+        let w = this.getWidth(target);
+        let h = this.getHeight(target);
 
         let x_setting = this.settings.open_btn_pos_x;
         let y_setting = this.settings.open_btn_pos_y;
@@ -376,16 +319,19 @@ export default class MermaidPopupPlugin extends Plugin {
     }
 
     adjustDiagramWidthAndHeight_ToContainer(container: HTMLElement){
-        let desEle = this.getDiagramElement(container) as HTMLElement;
-        if (!desEle)
+
+        let dig_Ele = this.getDiagramElement(container) as HTMLElement;
+        if (!dig_Ele)
             return;
 
-        let des_w = this.getWidth(desEle);
-        let des_h = this.getHeight(desEle);
+        let des_w = this.getWidth(dig_Ele);
+        let des_h = this.getHeight(dig_Ele);
+
+        let container_width = this.getWidth(container);
         let rate_by_width = 1;
-        if (des_w > container.offsetWidth) // 图表宽超容器
+        if (des_w > container_width) // 图表宽超容器
         {
-            rate_by_width = container.offsetWidth / des_w;
+            rate_by_width = container_width / des_w;
         }
             
         let rate_by_height = 1;
@@ -400,10 +346,14 @@ export default class MermaidPopupPlugin extends Plugin {
 
         let rate = rate_by_width < rate_by_height ? rate_by_width : rate_by_height;
 
-        desEle.setCssStyles({
+        dig_Ele.setCssStyles({
             height: des_h*rate + 'px',
             width: des_w*rate + 'px'
         });
+        container.setCssStyles({
+            height: des_h*rate + 'px',
+            width: des_w*rate + 'px'
+        });        
     }
 
     getWidth(ele:HTMLElement){
@@ -427,67 +377,6 @@ export default class MermaidPopupPlugin extends Plugin {
         return null;
     }
 
-    makeButtonDraggable(button: HTMLElement, mermaidDiv: HTMLElement, onDragStart: () => void) {
-        // posX, posY, 移动步长
-        let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
-    
-        button.onmousedown = (e) => {
-            e.preventDefault();
-    
-            // Get the mouse cursor position at startup
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            
-            //button = 0;
-
-            // 初始化按钮样式位置偏移量
-            button.setCssStyles({
-                left: button.offsetLeft + "px",
-                top: button.offsetTop + "px"
-            });
-
-            let hasMoved = false; // 标记是否发生了移动
-
-            // Call function when mouse is moved
-            button.doc.onmousemove = (e) => {
-                e.preventDefault();
-    
-                // Calculate the new cursor position
-                posX = mouseX - e.clientX;
-                posY = mouseY - e.clientY;
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-
-                hasMoved = true;
-                onDragStart(); // 标记为拖动
-
-                let btn_posX = button.offsetLeft - posX;
-                let btn_posY = button.offsetTop - posY;
-                btn_posX = btn_posX < 0 ? 0 : btn_posX;
-                btn_posX = button.parentElement ?
-                    ((btn_posX + button.offsetWidth) > button.parentElement?.offsetWidth ? button.offsetLeft : btn_posX)
-                    :btn_posX;
-                btn_posY = btn_posY < 0 ? 0 : btn_posY;
-                btn_posY = button.parentElement ?
-                    ((btn_posY + button.offsetHeight) > button.parentElement?.offsetHeight ? button.offsetTop : btn_posY)
-                    :btn_posY;                
-                // Set the element's new position
-                button.setCssStyles({
-                    bottom: 'auto',
-                    right: 'auto',
-                    left: btn_posX  + "px",
-                    top: btn_posY+ "px"
-                });                
-            };
-    
-            // Stop moving when mouse is released
-            button.doc.onmouseup = () => {
-                button.doc.onmousemove = null;
-                button.doc.onmouseup = null;
-            };
-        };
-    }   
-    
     GetPosButtonToMermaid(eleBtn: HTMLElement, eleDiv: HTMLElement){
         // 获取按钮和 div 的位置信息
         const divRect = eleDiv.getBoundingClientRect();
