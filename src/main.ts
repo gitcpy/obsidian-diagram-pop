@@ -72,9 +72,10 @@ export default class MermaidPopupPlugin extends Plugin {
     settings!: MermaidPopupSetting;
     observer_editting!:MutationObserver | null;
     observer_reading!:MutationObserver | null; 
-    openPopupBtn='mermaid-popup-button';
-    openPopupBtnReading='mermaid-popup-button-reading';
-
+    class_openPopupBtn='mermaid-popup-button';
+    class_openPopupBtnReading='mermaid-popup-button-reading';
+    class_openPopupBtn_container='mermaid-popup-button-container';
+    class_openPopupBtnReading_container='mermaid-popup-button-reading-container';
     async onload() {
         console.log(`Loading ${this.manifest.name} ${this.manifest.version}`);
 
@@ -84,13 +85,26 @@ export default class MermaidPopupPlugin extends Plugin {
         // 添加设置页面
         this.addSettingTab(new MermaidPopupSettingTab(this.app, this));
 
-        // this.registerMarkdownPostProcessor((element, context) => {
-        //     //this.registerMarkdownPostProcessor_MermaidPopup(element);
-        //     //console.log('registerMarkdownPostProcessor');
-        // });
+        this.registerMarkdownPostProcessor((element, context) => {
+            //this.registerMarkdownPostProcessor_MermaidPopup(element);
+            //console.log('registerMarkdownPostProcessor');
+        });
+
+        // 监听文档切换事件
+        this.registerEvent(this.app.workspace.on("active-leaf-change", (leaf) => {
+            let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+            //if (leaf && leaf.view && leaf.view.file) {
+            if (view && view.file) {
+            // 获取当前打开的文件名
+                const fileName = view.file.name;
+                console.log(`打开的文档是: ${fileName}`);
+                }
+            }
+        ));
       
         // 监听模式切换事件
         this.registerEvent(this.app.workspace.on('layout-change', () => {
+            console.log('layout-change', Date());debugger
             let view = this.app.workspace.getActiveViewOfType(MarkdownView);
             if (!view){ // 编辑器关闭
                 this.RelaseWhenfileClose();
@@ -105,11 +119,19 @@ export default class MermaidPopupPlugin extends Plugin {
                     containerClass = '.markdown-preview-view'; // 阅读容器
                 }
                 let container = view.containerEl.querySelector(containerClass) as HTMLElement;
-                let targetArr = this.GetSettingsClassElementAll(container)
+                let targetArr = this.GetSettingsClassElementAll(container);
+                if(!targetArr){
+                    console.log('layout-change', 'targetArr', 'no');
+                }else{
+                    console.log('layout-change', 'targetArr.length', targetArr.length);
+                }
                 for(var i=0;i<targetArr.length;i++)
                 {
+                    this.removeOpenBtn(targetArr[i] as HTMLElement);
                     this.addPopupButton(targetArr[i] as HTMLElement, isPreview);
                     this.ObserveIsChnanged(targetArr[i] as HTMLElement, isPreview);
+                    console.log('layout-change', 'targetArr ' + i, targetArr[i]);
+                   
                 }
 
                 if (isPreview) {
@@ -154,29 +176,45 @@ export default class MermaidPopupPlugin extends Plugin {
             this.addPopupButton(parentElement, false);
         }   
     }
-
+    // some target element not render
+    // monitor render and ajust the pos of open btn
     // targetNode ：target diagram
     ObserveIsChnanged(targetNode:HTMLElement, isPreviewMode:boolean = false){
         const config = { childList: true, subtree: true };
+        let observer = null
         const callback = (mutationsList:MutationRecord[], observer:MutationObserver) => {
-            // if (!targetNode.classList.contains('open_btn_pos'))
-            // {
-            //     targetNode.classList.add('open_btn_pos')
-            //     this.removeOpenBtn(targetNode);
-            //     this.addPopupButton(targetNode, isPreviewMode);
+
+            // for(let i=0;i<mutationsList.length;i++){
+            //     let mutation = mutationsList[i];
+            //     if (mutation.type === 'childList') {
+            //         this.updateDiagramContainer(targetNode, isPreviewMode);
+            //     }                
             // }
 
-            // let {popupButtonClass, popupButtonClass_container} = this.getOpenBtnInMd_Mark();
-            // let btn = targetNode.getElementsByClassName(popupButtonClass);
-            // if(btn && btn.length >0){
-            //     targetNode.classList.add('open_btn_pos')
-            //     this.removeOpenBtn(targetNode);
-            // }
-            // this.addPopupButton(targetNode, isPreviewMode);
+            console.log('ObserveIsChnanged - targetNode',targetNode);
         };
 
-        const observer = new MutationObserver(callback);
+        observer = new MutationObserver(callback);
         observer.observe(targetNode, config);
+    }
+
+    updateDiagramContainer(target: HTMLElement, isPreviewMode:boolean = false){
+        let {popupButtonClass, popupButtonClass_container} = this.getOpenBtnInMd_Mark_ByParam(isPreviewMode);
+        if (target.classList.contains(popupButtonClass_container)){
+            // resize container and diagram
+            this.adjustDiagramWidthAndHeight_ToContainer(target);
+            // update btn pos
+            let popupButton = target.querySelector('.' + popupButtonClass)
+            if (!popupButton){
+                this.addPopupButton(target, isPreviewMode);
+            }
+            else{
+                this.setPopupBtnPos(popupButton as HTMLElement, target);
+            }
+        }
+        else{
+            this.addPopupButton(target, isPreviewMode);
+        }
     }
 
     removeOpenBtn(targetNode:HTMLElement){
@@ -187,45 +225,45 @@ export default class MermaidPopupPlugin extends Plugin {
             return;
         targetNode.removeChild(btn[0] as Node);
     }
-
-    // 获取 
-    getOpenBtnInMd_Mark(){
-        let popupButtonClass = 'mermaid-popup-button';
-        let popupButtonClass_container = 'mermaid-popup-button-container';
-        if (this.isPreviewMode()){
-            popupButtonClass_container = 'mermaid-popup-button-container-reading';
-            popupButtonClass = 'mermaid-popup-button-reading'
+    getOpenBtnInMd_Mark_ByParam(isPreviewMode:boolean){
+        let popupButtonClass = this.class_openPopupBtn;
+        let popupButtonClass_container = this.class_openPopupBtn_container;
+        if (isPreviewMode){
+            popupButtonClass = this.class_openPopupBtnReading;
+            popupButtonClass_container = this.class_openPopupBtnReading_container;
         }
         return {popupButtonClass, popupButtonClass_container}
     }
 
+    // 获取 
+    getOpenBtnInMd_Mark(){
+        let popupButtonClass = this.class_openPopupBtn;
+        let popupButtonClass_container = this.class_openPopupBtn_container;
+        if (this.isPreviewMode()){
+            popupButtonClass = this.class_openPopupBtnReading;
+            popupButtonClass_container = this.class_openPopupBtnReading_container;
+        }
+        return {popupButtonClass, popupButtonClass_container}
+    }
+    // monitor new element add to edit view 
     ObserveToAddPopupButton(myView: HTMLElement, isPreviewMode:boolean = false){
         if (this.observer_editting)
             return;
         this.observer_editting = new MutationObserver((mutationsList, observer) => {
-            for (let i=0;i<mutationsList.length;i++) {
-                let mutation = mutationsList[i];
-                if (mutation.type !== "childList") {
-                    continue;
+
+            let containerArr = this.GetSettingsClassElementAll(myView);
+            for(var i=0;i<containerArr.length;i++){
+                let container = containerArr[i] as HTMLElement;
+                if(this.IsClassListContains_SettingsDiagramClass(container)){
+                    //console.log('edit', container);
+                    this.addPopupButton(container, isPreviewMode); 
                 }
-
-                let target = mutation.target as HTMLElement;
-                if(this.IsClassListContains_SettingsDiagramClass(target))
-                    this.addPopupButton(target, isPreviewMode);   
-
-                for(let i=0;i<mutation.addedNodes.length;i++){
-                    let nodeEle = mutation.addedNodes[i] as HTMLElement;
-                    if(this.IsClassListContains_SettingsDiagramClass(nodeEle))
-                        this.addPopupButton(nodeEle, isPreviewMode);                   
-                }
-
-            
             }
         });
 
         this.observer_editting.observe(myView, { childList: true, subtree: true});
     }
-
+    // monitor new element add to read view 
     ObserveToAddPopupButton_Reading(myView: HTMLElement, isPreviewMode:boolean){
         if (this.observer_reading)
             return;
@@ -233,8 +271,10 @@ export default class MermaidPopupPlugin extends Plugin {
             let containerArr = this.GetSettingsClassElementAll(myView);
             for(var i=0;i<containerArr.length;i++){
                 let container = containerArr[i] as HTMLElement;
-                if(this.IsClassListContains_SettingsDiagramClass(container))
+                if(this.IsClassListContains_SettingsDiagramClass(container)){
+                    //console.log('read', container);
                     this.addPopupButton(container, isPreviewMode); 
+                }
             }
         });
 
@@ -307,6 +347,7 @@ export default class MermaidPopupPlugin extends Plugin {
     }
 
     setPopupBtnPos(btn: HTMLElement, target: HTMLElement){
+        console.log('setPopupBtnPos target', target)
         let w_b = btn.offsetWidth;
         let h_b = btn.offsetHeight;
         //console.log('w_b', w_b, 'h_b', h_b);
@@ -319,7 +360,8 @@ export default class MermaidPopupPlugin extends Plugin {
 
         let left = this.getWidth(target) * parseFloat(x_setting) / 100;
         let top = this.getHeight(target) * parseFloat(y_setting) / 100
-
+        console.log('left', left, 'target w',  this.getWidth(target), 'x_setting', x_setting)
+        console.log('top', top, 'target h',  this.getHeight(target), 'y_setting', y_setting)
         left = (left+w_b) > w ? (left-w_b) : left;
         top = (top+h_b) > h ? (top-h_b) : top;
 
@@ -508,15 +550,15 @@ export default class MermaidPopupPlugin extends Plugin {
         // copy target
         let targetElementClone = targetElement.cloneNode(true);
         let targetElementInPopup = targetElementClone as HTMLElement;
-        let childElement = targetElementInPopup.querySelector('.' + this.openPopupBtn); // 获取需要删除的子元素
+        let childElement = targetElementInPopup.querySelector('.' + this.class_openPopupBtn); // 获取需要删除的子元素
         if (childElement) {
             targetElementInPopup.removeChild(childElement); // 从父元素中删除子元素
         }
         else{
-            childElement = targetElementInPopup.querySelector('.' + this.openPopupBtnReading); 
+            childElement = targetElementInPopup.querySelector('.' + this.class_openPopupBtnReading); 
             if (childElement) {
                 targetElementInPopup.removeChild(childElement); 
-            }        
+            }
         }
         targetElementInPopup.classList.add('popup-content', 'draggable', 'resizable');
 
