@@ -53,5 +53,7 @@ Click "Add Plugin", A fews seconds later, the installing will be completed.
     and drag by left click.
 
 - Settings
+- 
   <img src='https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/setting-0.png' />
+  
   These settings are the users to custom the plugin.
