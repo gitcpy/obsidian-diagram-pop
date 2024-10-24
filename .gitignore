@@ -1,5 +1,0 @@
-# all js code in main.js, so do not ignore main.js
-dist/**
-node_modules
-test-run/**
-bundle-analysis.html

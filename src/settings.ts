@@ -222,7 +222,7 @@ class MermaidPopupSettingTab extends PluginSettingTab {
         let titleConnect = containerEl.createEl('h2', { text: 'How to work in other plugins' });
         titleConnect.classList.add('config-text-connect');
 
-        containerEl.createEl('p', { text: '\'.diagram-popup\' is a preserved class for other plugins to work with.' })
+        containerEl.createEl('p', { text: '\'.diagram-popup\' is a reserved class for other plugins to work with.' })
         containerEl.createEl('p', { text: 'if you add it to the class list of your target container, it will get the functionality.' });
     }
 
