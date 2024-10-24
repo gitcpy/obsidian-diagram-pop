@@ -64,7 +64,7 @@ const DEFAULT_SETTINGS: MermaidPopupSetting = {
         '50':'60',
         '60':'60',
     },
-    open_btn_pos_x:'90',
+    open_btn_pos_x:'35',
     open_btn_pos_y:'90',
 };
 
@@ -267,6 +267,7 @@ export default class MermaidPopupPlugin extends Plugin {
         target.insertAdjacentElement('beforebegin', popupButton);
 
         this.adjustDiagramWidthAndHeight_ToContainer(target);
+        this.setPopupBtnPos(popupButton, target.parentElement as HTMLElement);
 
         // bind click to popup
         this.registerDomEvent(target, 'click', this.handleMermaidClick);
@@ -299,30 +300,29 @@ export default class MermaidPopupPlugin extends Plugin {
 
     setPopupBtnPos(btn: HTMLElement, target: HTMLElement){
 
-        let w_b = this.getWidth(btn);
-        let h_b = this.getHeight(btn);
-        //console.log('w_b', w_b, 'h_b', h_b);
-  
-        let w = this.getWidth(target);
-        let h = this.getHeight(target);
-
-        let x_setting = this.settings.open_btn_pos_x;
-        let y_setting = this.settings.open_btn_pos_y;
-
-        let left = this.getWidth(target) * parseFloat(x_setting) / 100;
-        let top = this.getHeight(target) * parseFloat(y_setting) / 100
-        console.log('left', left, 'target w',  this.getWidth(target), 'x_setting', x_setting)
-        console.log('top', top, 'target h',  this.getHeight(target), 'y_setting', y_setting)
-        left = (left+w_b) > w ? (left-w_b) : left;
-        top = (top+h_b) > h ? (top-h_b) : top;
-
-        left = left < 0 ? 0 : left;
-        top = top < 0 ? 0 : top;
-
         btn.setCssStyles({
-            left: left + 'px',
-            top: top + 'px'
+            right: this.settings.open_btn_pos_x + 'px'
         });
+
+        // let w_b = this.getWidth(btn);
+        // let w = this.getWidth(target);
+        // let x_setting = this.settings.open_btn_pos_x;
+        // let left = this.getWidth(target) * parseFloat(x_setting) / 100;
+        // left = (left+w_b) > w ? (left-w_b) : left;
+        // left = left < 0 ? 0 : left;
+        // btn.setCssStyles({
+        //     left: this.settings.open_btn_pos_x + '%'
+        // });
+
+        // let h_b = this.getHeight(btn);
+        // let h = this.getHeight(target);
+        // let y_setting = this.settings.open_btn_pos_y;
+        // let top = this.getHeight(target) * parseFloat(y_setting) / 100
+        // top = (top+h_b) > h ? (top-h_b) : top;
+        // top = top < 0 ? 0 : top;
+        // btn.setCssStyles({
+        //     top: top + 'px'
+        // });
     }
 
     adjustDiagramWidthAndHeight_ToContainer(container: HTMLElement){

@@ -47,7 +47,7 @@
 /*开启弹窗按钮*/
 div.mermaid-popup-button, div.mermaid-popup-button-reading {
     position: absolute !important;
-    left: 90%;
+    right: 35px;
     top: 4px;
     color: var(--text-muted);
     width: 30px;

@@ -134,19 +134,22 @@ class MermaidPopupSettingTab extends PluginSettingTab {
             )
         });  
 
-        // // 开启弹窗按钮位置
-        // let title_btn_pos = containerEl.createEl('h2', { text: 'Open Popup Button Relative Position Init' });
-        // title_btn_pos.classList.add('config-text');   
+        // 开启弹窗按钮位置
+        let title_btn_pos = containerEl.createEl('h2', { text: 'Open Popup Button Relative Position Init' });
+        title_btn_pos.classList.add('config-text');   
         
-        // const kvRow_open_btn = containerEl.createDiv({ cls: 'kv-row open_btn_pos' });
-        // this.slideInput(kvRow_open_btn, "x:", this.plugin.settings.open_btn_pos_x,  (val)=>{this.plugin.settings.open_btn_pos_x=val});
-        // this.slideInput(kvRow_open_btn, "y:", this.plugin.settings.open_btn_pos_y, (val)=>{this.plugin.settings.open_btn_pos_y=val});
-
+        const kvRow_open_btn = containerEl.createDiv({ cls: 'kv-row open_btn_pos' });
+        this.slideInput(kvRow_open_btn, "x:", this.plugin.settings.open_btn_pos_x,  (val)=>{this.plugin.settings.open_btn_pos_x=val}, '1', '500', 'px');
+        //this.slideInput(kvRow_open_btn, "y:", this.plugin.settings.open_btn_pos_y, (val)=>{this.plugin.settings.open_btn_pos_y=val});
         // this.setInfo(kvRow_open_btn, 'Click for tips on Open Popup Button Relative Position Init Setting.',
         //     'Open Popup Button Relative Position Init Setting',
         //     'The origin of open popup button relative position, is at top left of the diagram container.' +
         //             'In the setting, x represents the width ratio from the origin, and y represents the height ratio from that.'
         // ) 
+        this.setInfo(kvRow_open_btn, 'Click for tips on Open Popup Button Relative Position Init Setting.',
+            'Open Popup Button Relative Position Init Setting',
+            'x represents the pixels to the right edge of the diagram container.'
+        ) 
 
         let title = containerEl.createEl('h2', { text: 'Add New Diagram' });
         title.classList.add('config-text');
@@ -238,7 +241,7 @@ class MermaidPopupSettingTab extends PluginSettingTab {
         });  
     }
 
-    slideInput(containerEl: HTMLElement, title:string, value: string, saveVal:(newVal:string)=>void){
+    slideInput(containerEl: HTMLElement, title:string, value: string, saveVal:(newVal:string)=>void, step:string='10', max:string='100', unit:string='%'){
         let input_title = containerEl.createEl('p');
         input_title.classList.add('open_btn_pos_slide_title');
         input_title.setText(title);
@@ -251,12 +254,12 @@ class MermaidPopupSettingTab extends PluginSettingTab {
         
         input.setAttribute('type','range');
         input.setAttribute('min','0');
-        input.setAttribute('max','100');
-        input.setAttribute('step','10');
+        input.setAttribute('max',max);
+        input.setAttribute('step',step);
         input.setAttribute('value',value);  
 
         let input_val_max = containerEl.createEl('p');
-        input_val_max.setText('100%');
+        input_val_max.setText(max + unit);
 
         let input_val_cur_title = containerEl.createEl('p',  {text:'current:'});
         input_val_cur_title.classList.add('open_btn_pos_cur_title');
@@ -264,7 +267,7 @@ class MermaidPopupSettingTab extends PluginSettingTab {
         input_val_cur.classList.add('open_btn_pos_cur_val');
         input_val_cur.setText(value);
         let input_val_cur_per = containerEl.createEl('p');
-        input_val_cur_per.setText('%');
+        input_val_cur_per.setText(unit);
         input_val_cur_per.classList.add('open_btn_pos_cur_per');
 
         // 监听 input 事件
