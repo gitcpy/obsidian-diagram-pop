@@ -2,10 +2,7 @@ A plugin for obsidian. Show diagrams, from mermaid, plantuml, graphviz and so on
 
 - Demo
 
-<video width="640" height="360" controls>
-  <source src="[https://example.com/path/to/video.mp4" type="video/mp4](https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/Demo.mp4)">
-  Your browser does not support the video tag.
-</video>
+[[View demo](https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/Demo)](https://github.com/user-attachments/assets/b6015c77-17e0-4c79-9d85-eca961bbd329)
 
 - Install
 
