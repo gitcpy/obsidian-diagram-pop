@@ -263,11 +263,14 @@ export default class MermaidPopupPlugin extends Plugin {
         popupButton.textContent = 'Open Popup';
         setIcon(popupButton, 'maximize');
         popupButton.title = 'Open Popup';
-        popupButton.setCssStyles({display:'none'});
         target.insertAdjacentElement('beforebegin', popupButton);
 
         this.adjustDiagramWidthAndHeight_ToContainer(target);
-        this.setPopupBtnPos(popupButton, target.parentElement as HTMLElement);
+        let container_btn = target.parentElement;
+        container_btn = container_btn as HTMLElement;
+        if(isPreviewMode)
+            container_btn.setCssStyles({position:'relative'});
+        this.setPopupBtnPos(popupButton, container_btn);
 
         // bind click to popup
         this.registerDomEvent(target, 'click', this.handleMermaidClick);
@@ -285,7 +288,8 @@ export default class MermaidPopupPlugin extends Plugin {
             isDragging = false;
         });
 
-        this.makePopupButtonDisplay_WhenHoverOnContainer(popupButton, target.parentElement as HTMLElement);
+        //popupButton.setCssStyles({display:'none'});
+        //this.makePopupButtonDisplay_WhenHoverOnContainer(popupButton, target.parentElement as HTMLElement);
     }
 
     makePopupButtonDisplay_WhenHoverOnContainer(button:HTMLElement, container:HTMLElement){
