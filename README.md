@@ -2,7 +2,7 @@ A plugin for obsidian. Show diagrams, from mermaid, plantuml, graphviz and so on
 
 Demo:
 
-![](https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/Demo.gif)
+![](https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/Demo.mp4)
 
 You could get it from the BRAT plugin which you could download from the comunity plugins in obsidian. 
 
