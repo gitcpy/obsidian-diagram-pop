@@ -1,8 +1,10 @@
 A plugin for obsidian. Show diagrams, from mermaid, plantuml, graphviz and so on, in a draggable and zoomable popup. 
 
-Demo:
+- Demo
 
 [View demo](https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/Demo.mp4)
+
+- Install
 
 You could get it from the BRAT plugin which you could download from the comunity plugins in obsidian. 
 
@@ -16,10 +18,11 @@ just fill in the textbox with the url "https://github.com/gitcpy/obsidian-diagra
 
 Click "Add Plugin", A fews seconds later, the installing will be completed.
 
-Usage:
-
-  If there is any mermaid diagram in the markdown file, open the popup up with `ctrl`+`left click`.
-
+- Usage
+  - Open the popup
+    If there is diagram in the markdown file, open the popup up with `ctrl`+`left click`, or click the open buttn on top.
+    [Open](https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/use-click-open-button.png)
+  
   It is easy to manipulate the popup. 
 
   7 ui keys as follow:
