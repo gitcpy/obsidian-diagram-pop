@@ -87,26 +87,26 @@ export default class MermaidPopupPlugin extends Plugin {
         // 添加设置页面
         this.addSettingTab(new MermaidPopupSettingTab(this.app, this));
 
-        this.registerMarkdownPostProcessor((element, context) => {
-            //this.registerMarkdownPostProcessor_MermaidPopup(element);
-            //console.log('registerMarkdownPostProcessor');
-        });
+        // this.registerMarkdownPostProcessor((element, context) => {
+        //     //this.registerMarkdownPostProcessor_MermaidPopup(element);
+        //     //console.log('registerMarkdownPostProcessor');
+        // });
 
-        // 监听文档切换事件
-        this.registerEvent(this.app.workspace.on("active-leaf-change", (leaf) => {
-            let view = this.app.workspace.getActiveViewOfType(MarkdownView);
-            //if (leaf && leaf.view && leaf.view.file) {
-            if (view && view.file) {
-            // 获取当前打开的文件名
-                const fileName = view.file.name;
-                console.log(`打开的文档是: ${fileName}`);
-                }
-            }
-        ));
+        // // 监听文档切换事件
+        // this.registerEvent(this.app.workspace.on("active-leaf-change", (leaf) => {
+        //     let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        //     //if (leaf && leaf.view && leaf.view.file) {
+        //     if (view && view.file) {
+        //     // 获取当前打开的文件名
+        //         const fileName = view.file.name;
+        //         console.log(`打开的文档是: ${fileName}`);
+        //         }
+        //     }
+        // ));
       
         // 监听模式切换事件
         this.registerEvent(this.app.workspace.on('layout-change', () => {
-            console.log('layout-change', Date());
+
             let view = this.app.workspace.getActiveViewOfType(MarkdownView);
             if (!view){ // 编辑器关闭
                 this.RelaseWhenfileClose();
@@ -122,15 +122,9 @@ export default class MermaidPopupPlugin extends Plugin {
                 }
                 let container = view.containerEl.querySelector(containerClass) as HTMLElement;
                 let targetArr = this.GetSettingsClassElementAll(container);
-                if(!targetArr){
-                    console.log('layout-change', 'targetArr', 'no');
-                }else{
-                    console.log('layout-change', 'targetArr.length', targetArr.length);
-                }
                 for(var i=0;i<targetArr.length;i++)
                 {
                     this.addPopupButton(targetArr[i] as HTMLElement, isPreview);
-                    console.log('layout-change', 'targetArr ' + i, targetArr[i]);
                 }
 
                 if (isPreview) {
@@ -206,7 +200,6 @@ export default class MermaidPopupPlugin extends Plugin {
             for(var i=0;i<containerArr.length;i++){
                 let container = containerArr[i] as HTMLElement;
                 if(this.IsClassListContains_SettingsDiagramClass(container)){
-                    //console.log('edit', container);
                     this.addPopupButton(container, isPreviewMode); 
                 }
             }
@@ -223,7 +216,6 @@ export default class MermaidPopupPlugin extends Plugin {
             for(var i=0;i<containerArr.length;i++){
                 let container = containerArr[i] as HTMLElement;
                 if(this.IsClassListContains_SettingsDiagramClass(container)){
-                    //console.log('read', container);
                     this.addPopupButton(container, isPreviewMode); 
                 }
             }
@@ -288,8 +280,8 @@ export default class MermaidPopupPlugin extends Plugin {
             isDragging = false;
         });
 
-        //popupButton.setCssStyles({display:'none'});
-        //this.makePopupButtonDisplay_WhenHoverOnContainer(popupButton, target.parentElement as HTMLElement);
+        popupButton.setCssStyles({display:'none'});
+        this.makePopupButtonDisplay_WhenHoverOnContainer(popupButton, target.parentElement as HTMLElement);
     }
 
     makePopupButtonDisplay_WhenHoverOnContainer(button:HTMLElement, container:HTMLElement){
