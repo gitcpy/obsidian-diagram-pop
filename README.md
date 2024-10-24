@@ -1,7 +1,7 @@
 A plugin for obsidian. Show diagrams, from mermaid, plantuml, graphviz and so on, in a draggable and zoomable popup. 
 
 - Demo
-### Demo for PC:
+### Demo :
 [View demo](https://github.com/user-attachments/assets/b6015c77-17e0-4c79-9d85-eca961bbd329)
 
 - Install
