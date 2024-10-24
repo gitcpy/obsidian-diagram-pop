@@ -25,6 +25,7 @@ Click "Add Plugin", A fews seconds later, the installing will be completed.
     <img src='https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/use-click-open-button.png' />
     
   - Popup operation
+    
     <img src='https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/use-oper-popup.png' style='max-width:70%;' />
     
     It is easy to manipulate the popup. 
