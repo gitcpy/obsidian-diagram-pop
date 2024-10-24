@@ -12,7 +12,7 @@ After installed the BRAT plugin, go to the settings, and click "Commuity Plugins
 
 Click the "Options" button of BRAT plugin, and then click "Add Beta plugin", 
 
-just fill in the textbox with the url "https://github.com/gitcpy/obsidian-mermaid-pop",
+just fill in the textbox with the url "https://github.com/gitcpy/obsidian-diagram-pop",
 
 Click "Add Plugin", A fews seconds later, the installing will be completed.
 
