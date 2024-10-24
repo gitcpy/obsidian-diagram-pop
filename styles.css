@@ -60,7 +60,7 @@ div.mermaid-popup-button, div.mermaid-popup-button-reading {
 }
 
 div.mermaid-popup-button:hover, div.mermaid-popup-button-reading:hover {
-    background-color: var(--color-base-25); /* 鼠标悬停时颜色变化 */
+    background-color: rgb(92, 92, 92, 0.1); /* 鼠标悬停时颜色变化 */
     cursor:default;
 }
 
