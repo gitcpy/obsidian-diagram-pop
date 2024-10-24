@@ -22,11 +22,11 @@ Click "Add Plugin", A fews seconds later, the installing will be completed.
   - Open the popup
     
     If there is diagram in the markdown file, open the popup up with `ctrl`+`left click`, or click the open buttn on top.
-    <img src='https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/use-click-open-button.png' />
+    <img src='https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/use-click-open-button-s.png' />
     
   - Popup operation
     
-    <img src='https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/use-oper-popup.png' style='max-width:70%;' />
+    <img src='https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/use-oper-popup-s.png' />
     
     It is easy to manipulate the popup. 
 
@@ -52,6 +52,6 @@ Click "Add Plugin", A fews seconds later, the installing will be completed.
 
 - Settings
   
-  <img src='https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/setting-0.png' />
+  <img src='https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/setting-0-s.png' />
   
     These settings are for the users to custom the plugin.
