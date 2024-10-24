@@ -2,7 +2,10 @@ A plugin for obsidian. Show diagrams, from mermaid, plantuml, graphviz and so on
 
 - Demo
 
-[View demo](https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/Demo.mp4)
+<video width="640" height="360" controls>
+  <source src="[https://example.com/path/to/video.mp4" type="video/mp4](https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/Demo.mp4)">
+  Your browser does not support the video tag.
+</video>
 
 - Install
 
@@ -21,7 +24,7 @@ Click "Add Plugin", A fews seconds later, the installing will be completed.
 - Usage
   - Open the popup
     If there is diagram in the markdown file, open the popup up with `ctrl`+`left click`, or click the open buttn on top.
-    [Open](https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/use-click-open-button.png)
+    <img src='https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/use-click-open-button.png' />
   
   It is easy to manipulate the popup. 
 
