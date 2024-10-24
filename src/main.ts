@@ -249,12 +249,7 @@ export default class MermaidPopupPlugin extends Plugin {
 
     // Add a button to each Mermaid diagram for triggering the popup
     addPopupButton(target: HTMLElement, isPreviewMode:boolean = false) {
-        let popupButtonClass = 'mermaid-popup-button';
-        let popupButtonClass_container = 'mermaid-popup-button-container';
-        if (isPreviewMode){
-            popupButtonClass_container = 'mermaid-popup-button-container-reading';
-            popupButtonClass = 'mermaid-popup-button-reading'
-        }
+        let {popupButtonClass, popupButtonClass_container} = this.getOpenBtnInMd_Mark_ByParam(isPreviewMode);
 
         let popupButton = target.previousElementSibling as HTMLElement;
         // return if exist
@@ -263,12 +258,12 @@ export default class MermaidPopupPlugin extends Plugin {
             return;
         }
         // Create the popup button
-        popupButton = target.doc.createElement('button');
+        popupButton = target.doc.createElement('div');
         popupButton.classList.add(popupButtonClass);
         popupButton.textContent = 'Open Popup';
         setIcon(popupButton, 'maximize');
         popupButton.title = 'Open Popup';
-
+        popupButton.setCssStyles({display:'none'});
         target.insertAdjacentElement('beforebegin', popupButton);
 
         this.adjustDiagramWidthAndHeight_ToContainer(target);
@@ -287,6 +282,18 @@ export default class MermaidPopupPlugin extends Plugin {
             }
             // Reset the dragging flag after click
             isDragging = false;
+        });
+
+        this.makePopupButtonDisplay_WhenHoverOnContainer(popupButton, target.parentElement as HTMLElement);
+    }
+
+    makePopupButtonDisplay_WhenHoverOnContainer(button:HTMLElement, container:HTMLElement){
+        container.addEventListener('mouseenter', () => {
+            button.setCssStyles({display:'block'});
+        });
+        
+        container.addEventListener('mouseleave', () => {
+            button.setCssStyles({display:'none'});
         });
     }
 

@@ -45,46 +45,23 @@
 }
 
 /*开启弹窗按钮*/
-.mermaid-popup-button-container {
-    position: relative !important; 
-}
-
-.mermaid-popup-button-container-reading {
-    position: relative !important; 
-}
-
-button.mermaid-popup-button {
-    position: relative !important;
+div.mermaid-popup-button, div.mermaid-popup-button-reading {
+    position: absolute !important;
     left: 90%;
+    top: 4px;
+    color: var(--text-muted);
+    width: 30px;
+    height: 26px;
 
-    color: var(--text-normal);
-    border: none;
-    padding: 5px;
+    padding: 4px 3px 3px 6px;
     border-radius: 4px;
     cursor: move; /* 鼠标显示为拖动图标 */
     z-index: 9999;
 }
 
-button.mermaid-popup-button:hover {
-    background-color: rgba(0, 0, 0, 0.5); /* 鼠标悬停时颜色变化 */
-    cursor: pointer;
-}
-
-button.mermaid-popup-button-reading {
-    position: relative !important;
-    left: 90%;
-
-    color: var(--text-normal);
-    border: none;
-    padding: 5px;
-    border-radius: 4px;
-    cursor: move; /* 鼠标显示为拖动图标 */
-    z-index: 9999;
-}
-
-button.mermaid-popup-button-reading:hover {
-    background-color: rgba(0, 0, 0, 0.5); /* 鼠标悬停时颜色变化 */
-    cursor: pointer;
+div.mermaid-popup-button:hover, div.mermaid-popup-button-reading:hover {
+    background-color: var(--color-base-25); /* 鼠标悬停时颜色变化 */
+    cursor:default;
 }
 
 /*操作弹窗按钮*/
