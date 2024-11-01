@@ -42,7 +42,7 @@ Click "Add Plugin", A fews seconds later, the installing will be completed.
       
       Zoom out or zoom in by touching with two fingers
       
-      Drag by touching the screen and move with one finger
+      Drag by touching and moving with one finger
  
     - Use UI buttons
       
