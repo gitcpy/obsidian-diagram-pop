@@ -48,9 +48,9 @@ Click "Add Plugin", A fews seconds later, the installing will be completed.
       
       No matter on PC or mobile, You can do it by 7 UI keys in the popup as follows:
       
-      <code>+</code> : zoomin
+      <code>+</code> : zoom in
         
-      <code>-</code> : zoomout
+      <code>-</code> : zoom out
         
       <code>←</code>  : move left
     
