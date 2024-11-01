@@ -477,6 +477,7 @@ export default class MermaidPopupPlugin extends Plugin {
             this.zoomPopupAtCursor(targetElementInPopup, isOut, evt);
         });
     }
+
     setPopupSize(_targetElementInPopup:HTMLElement, _targetElement:HTMLElement){
         let multiVal = parseFloat(this.settings.PopupSizeInitValue);
         if (typeof multiVal != "number"){
@@ -697,5 +698,97 @@ export default class MermaidPopupPlugin extends Plugin {
         };
 
         element.addEventListener('mousedown', mouseDownHandler);
+
+        let lastScale = 1;
+        let initialDistance = 0;
+        let t = {scaleX:1, obliqueX:0, obliqueY:0, scaleY:1, translateX:0, translateY:0};
+
+        element.addEventListener('touchstart', (e) => {
+            e.stopPropagation(); 
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                initialX = touch.clientX;
+                initialY = touch.clientY;
+                
+            } else if (e.touches.length === 2) {
+                t = getTransform(element);
+                lastScale = t.scaleX;
+                initialX = e.touches[0].clientX;
+                initialY = e.touches[0].clientY;                
+                initialDistance = getDistance(e.touches[0], e.touches[1]);
+            }
+        });        
+        element.addEventListener('touchmove', (e) => {
+            e.stopPropagation(); 
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                t = getTransform(element);
+                touch_move(e, t)
+            } else if (e.touches.length === 2) {
+                const distance = getDistance(e.touches[0], e.touches[1]);
+                lastScale = (distance / initialDistance) * lastScale;
+                initialDistance = distance;
+                t = getTransform(element);
+                t.scaleX = lastScale;
+                t.scaleY = lastScale;
+                touch_move(e, t)
+            }
+        });
+
+        const touch_move = (e:TouchEvent, t:any) => {
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - initialX;
+            const deltaY = touch.clientY - initialY;
+
+            initialX = touch.clientX;
+            initialY = touch.clientY;
+            let tx = t.translateX + deltaX;
+            let ty = t.translateY + deltaY;
+            setTransform(element, tx, ty, t.scaleX);
+
+        }
+
+        const getTransform = (touchArea:HTMLElement) => {
+            const transform:string = window.getComputedStyle(touchArea).getPropertyValue('transform');
+            if (transform && transform !== 'none') {
+                // 使用正则表达式提取矩阵值
+                const match = transform.match(/matrix\((.+)\)/);
+                if (match) {
+                    const values = match[1].split(', ').map(parseFloat);
+        
+                    // 确保 values 长度足够
+                    if (values.length >= 6) {
+                        const scaleX = values[0]; // zoom
+                        const obliqueX = values[1]; // oblique
+                        const obliqueY = values[2];
+                        const scaleY = values[3]; // 修正为 values[3]
+                        const translateX = values[4]; // 第5个值为平移x
+                        const translateY = values[5]; // 第6个值为平移y
+
+                        return { scaleX, obliqueX, obliqueY, scaleY, translateX, translateY };
+                    }
+                }
+            }
+            return {scaleX:1, obliqueX:0, obliqueY:0, scaleY:1, translateX:0, translateY:0};
+        }
+        
+        const setTransform = (touchArea:HTMLElement, _translateX:number, _translateY:number, _scale:number) => {
+            let transform = `translate(${_translateX}px, ${_translateY}px) scale(${_scale})`;
+            touchArea.setCssStyles({
+                transform: transform
+            })  
+        }
+
+        const getDistance = (touch1:Touch, touch2:Touch) => {
+            const dx = touch1.clientX - touch2.clientX;
+            const dy = touch1.clientY - touch2.clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        const getNumber = (_str:string) => {
+            let num = parseFloat(_str);
+            return isNaN(num) ? 0 : num;
+        }        
     }    
 }
