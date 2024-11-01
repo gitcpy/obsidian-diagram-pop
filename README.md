@@ -19,6 +19,7 @@ just fill in the textbox with the url "https://github.com/gitcpy/obsidian-diagra
 Click "Add Plugin", A fews seconds later, the installing will be completed.
 
 - Usage
+  
   - Open the popup
     
     If there is diagram in the markdown file, open the popup up with `ctrl`+`left click`, or click the open buttn on top.
@@ -29,27 +30,37 @@ Click "Add Plugin", A fews seconds later, the installing will be completed.
     
     <img src='https://github.com/gitcpy/obsidian-diagram-pop/blob/main/gifs/use-oper-popup-s.png' />
     
-    It is easy to manipulate the popup. 
+    It is easy to operate the popup. 
+ 
+    - Use mouse on PC
+      
+      Zoom out or zoom in by wheel
 
-    7 ui keys as follow:
-    
-    <code>+</code> : zoomin
+      Drag by holding left click
       
-    <code>-</code> : zoomout
+    - Use touching on mobile
       
-    <code>←</code>  : move left
-  
-    <code>→</code>  : move ight
+      Zoom out or zoom in by touching with two fingers
+      
+      Drag by touching the screen and move with one finger
+ 
+    - Use UI buttons
+      
+      No matter on PC or mobile, You can do it by 7 UI keys in the popup as follows:
+      
+      <code>+</code> : zoomin
+        
+      <code>-</code> : zoomout
+        
+      <code>←</code>  : move left
     
-    <code>↑</code>  : move up
-  
-    <code>↓</code>  : move down
-  
-    <code>x</code>  : close
+      <code>→</code>  : move ight
+      
+      <code>↑</code>  : move up
     
-    and zoomout or zoomin by wheel， 
+      <code>↓</code>  : move down
     
-    and drag by left click.
+      <code>x</code>  : close
 
 - Settings
   
