@@ -1,9 +1,9 @@
 {
-    "id": "Mermaid-popup",
+    "id": "mermaid-popup",
     "name": "Diagram Popup",
     "version": "0.2.60",
     "minAppVersion": "0.12.0",
-    "description": "Show diagrams, from Mermaid, Plantuml, Graphviz and so on, in a draggable and zoomable popup",
+    "description": "Show diagrams, from Mermaid, PlantUML, Graphviz and so on, in a draggable and zoomable popup",
     "author": "ChenPengyuan",
     "isDesktopOnly": false
 }
