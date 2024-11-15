@@ -139,7 +139,6 @@ class MermaidPopupSettingTab extends PluginSettingTab {
         // bg Alpha title
         let titlePpBgA = td_title_a.createEl('h2', { text: 'Popup Background Alpha Value' });
         titlePpBgA.classList.add('config-text');
-        //const rowPpBgAlpha = td_title_a.createDiv({ cls: 'kv-row' });
         // bg Alpha settign
         new Setting(td_title_a)
         .setName('Choose the alpha value')
@@ -154,13 +153,28 @@ class MermaidPopupSettingTab extends PluginSettingTab {
                     this.plugin.settings.bgAlpha = value;
                     await this.plugin.saveSettings();
                 }
-            
             )
         });    
 
         this.addClass(td_title_a, 'setting-item', 'setting-item-on-top-line');
 
-        
+        const td_title_blur = row.createEl('td');
+        // bg Alpha title
+        let titleBlur = td_title_blur.createEl('h2', { text: 'Popup Background Blur' });
+        titleBlur.classList.add('config-text');
+        // bg Alpha settign
+        new Setting(td_title_blur)
+        .setName('Enable blur')
+        .addToggle(toggle => 
+            toggle
+                .setValue(this.plugin.settings.bgIsBlur=='1'?true:false)
+                .onChange(async (value) => {
+                    this.plugin.settings.bgIsBlur = value?'1':'0';
+                    await this.plugin.saveSettings();
+                })
+        );
+
+        this.addClass(td_title_blur, 'setting-item', 'setting-item-on-top-line');        
 
         // 开启弹窗按钮位置
         let title_btn_pos = containerEl.createEl('h2', { text: 'Open Popup Button Relative Position Init' });

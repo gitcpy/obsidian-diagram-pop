@@ -25,6 +25,7 @@ interface MermaidPopupSetting {
     bgColorDark:string;
     bgAlpha:string;
     bgAlphaStep:Record<string, string>;
+    bgIsBlur:string;
 };
 
 const DEFAULT_SETTINGS: MermaidPopupSetting = {
@@ -85,7 +86,8 @@ const DEFAULT_SETTINGS: MermaidPopupSetting = {
         '0.8':'0.8',
         '0.9':'0.9',
         '1.0':'1.0'
-    },    
+    },  
+    bgIsBlur:'1'
 };
 
 export default class MermaidPopupPlugin extends Plugin {
@@ -441,6 +443,7 @@ export default class MermaidPopupPlugin extends Plugin {
         const overlay = targetElement.doc.createElement('div');
         overlay.classList.add('popup-overlay');
         this.setPopupBgAlpha(overlay);
+        this.setPopupBgBlur(overlay);
         // copy target
         let targetElementClone = targetElement.cloneNode(true);
         let targetElementInPopup = targetElementClone as HTMLElement;
@@ -498,10 +501,21 @@ export default class MermaidPopupPlugin extends Plugin {
         });
     }
 
+    setPopupBgBlur(_popupElement:HTMLElement){
+        if (!_popupElement) 
+            return;
+
+        let bgIsBlur = this.settings.bgIsBlur;
+        let cssBgIsBlur = bgIsBlur=='1'?'blur(10px)':'';
+        _popupElement.setCssStyles({
+            backdropFilter:cssBgIsBlur
+        })        
+    }
+
     setPopupBgAlpha(_popupElement:HTMLElement) {
         if (!_popupElement) 
             return;
-        
+
         let alpha = this.settings.bgAlpha;
         // 构造新的 rgba 值
         let newBgColor;
