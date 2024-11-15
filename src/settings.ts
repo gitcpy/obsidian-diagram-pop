@@ -134,6 +134,34 @@ class MermaidPopupSettingTab extends PluginSettingTab {
             )
         });  
 
+        const row = tbody.createEl('tr');
+        const td_title_a = row.createEl('td');
+        // bg Alpha title
+        let titlePpBgA = td_title_a.createEl('h2', { text: 'Popup Background Alpha Value' });
+        titlePpBgA.classList.add('config-text');
+        //const rowPpBgAlpha = td_title_a.createDiv({ cls: 'kv-row' });
+        // bg Alpha settign
+        new Setting(td_title_a)
+        .setName('Choose the alpha value')
+        .addDropdown(dropdown => {
+            let bgAlphaStep = this.plugin.settings.bgAlphaStep;
+            for(const key in bgAlphaStep){
+                dropdown.addOption(key, bgAlphaStep[key])
+            }
+            dropdown
+                .setValue(this.plugin.settings.bgAlpha)
+                .onChange(async (value) => {
+                    this.plugin.settings.bgAlpha = value;
+                    await this.plugin.saveSettings();
+                }
+            
+            )
+        });    
+
+        this.addClass(td_title_a, 'setting-item', 'setting-item-on-top-line');
+
+        
+
         // 开启弹窗按钮位置
         let title_btn_pos = containerEl.createEl('h2', { text: 'Open Popup Button Relative Position Init' });
         title_btn_pos.classList.add('config-text');   
@@ -149,8 +177,9 @@ class MermaidPopupSettingTab extends PluginSettingTab {
         this.setInfo(kvRow_open_btn, 'Click for tips on Open Popup Button Relative Position Init Setting.',
             'Open Popup Button Relative Position Init Setting',
             'x represents the pixels to the right edge of the diagram container.'
-        ) 
+        )       
 
+        // Add New Diagram
         let title = containerEl.createEl('h2', { text: 'Add New Diagram' });
         title.classList.add('config-text');
 
@@ -224,6 +253,13 @@ class MermaidPopupSettingTab extends PluginSettingTab {
 
         containerEl.createEl('p', { text: '\'.diagram-popup\' is a reserved class for other plugins to work with.' })
         containerEl.createEl('p', { text: 'if you add it to the class list of your target container, it will get the functionality.' });
+    }
+
+    addClass(_container:HTMLElement, _targetElementClass:string, _class:string){
+        let dropdownElement = _container.querySelector('.' + _targetElementClass);
+        if (dropdownElement) {
+            dropdownElement.classList.add(_class);
+        }
     }
 
     setInfo(containerEl: HTMLElement, tip:string, title:string, msg:string){

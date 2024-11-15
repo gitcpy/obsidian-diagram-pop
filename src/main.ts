@@ -21,6 +21,10 @@ interface MermaidPopupSetting {
 
     open_btn_pos_x:string;
     open_btn_pos_y:string;
+    bgColorLight:string;
+    bgColorDark:string;
+    bgAlpha:string;
+    bgAlphaStep:Record<string, string>;
 };
 
 const DEFAULT_SETTINGS: MermaidPopupSetting = {
@@ -66,6 +70,22 @@ const DEFAULT_SETTINGS: MermaidPopupSetting = {
     },
     open_btn_pos_x:'35',
     open_btn_pos_y:'90',
+    bgColorLight:'rgba(255,255,255, 0.5)',
+    bgColorDark:'rgba(51,51,51, 0.5)',
+    bgAlpha:'0.5',
+    bgAlphaStep:{
+        '0.0':'0.0',
+        '0.1':'0.1',
+        '0.2':'0.2',
+        '0.3':'0.3',
+        '0.4':'0.4',
+        '0.5':'0.5',
+        '0.6':'0.6',
+        '0.7':'0.7',
+        '0.8':'0.8',
+        '0.9':'0.9',
+        '1.0':'1.0'
+    },    
 };
 
 export default class MermaidPopupPlugin extends Plugin {
@@ -420,7 +440,7 @@ export default class MermaidPopupPlugin extends Plugin {
         // popup-overlay
         const overlay = targetElement.doc.createElement('div');
         overlay.classList.add('popup-overlay');
-
+        this.setPopupBgAlpha(overlay);
         // copy target
         let targetElementClone = targetElement.cloneNode(true);
         let targetElementInPopup = targetElementClone as HTMLElement;
@@ -476,6 +496,33 @@ export default class MermaidPopupPlugin extends Plugin {
             const isOut = evt.deltaY > 0;
             this.zoomPopupAtCursor(targetElementInPopup, isOut, evt);
         });
+    }
+
+    setPopupBgAlpha(_popupElement:HTMLElement) {
+        if (!_popupElement) 
+            return;
+        
+        let alpha = this.settings.bgAlpha;
+        // 构造新的 rgba 值
+        let newBgColor;
+        if (this.isThemeLight()) {
+            newBgColor = `rgba(255, 255, 255, ${alpha})`;
+        } else if (this.isThemeDark()) {
+            newBgColor = `rgba(51, 51, 51, ${alpha})`;
+        }
+        
+        // 更新背景颜色和模糊效果
+        _popupElement.setCssStyles({
+            backgroundColor: newBgColor
+        })
+    }    
+
+    isThemeLight(){
+        return document.body.classList.contains('theme-light');
+    }
+
+    isThemeDark(){
+        return document.body.classList.contains('theme-dark');
     }
 
     setPopupSize(_targetElementInPopup:HTMLElement, _targetElement:HTMLElement){
