@@ -4,8 +4,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
+    background: var(--background-primary);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -34,13 +33,13 @@
 
 /* 浅色模式下的弹窗背景 */
 .theme-light .popup-content {
-    background-color: rgb(255, 255, 255, 0.5) !important; /* 白色背景 */
+    background-color: var(--background-primary) !important; /* 白色背景 */
     color: #000000; /* 黑色文本 */
 }
 
 /* 深色模式下的弹窗背景 */
 .theme-dark .popup-content {
-    background-color: rgb(51, 51, 51, 0.5) !important; /* 深灰色背景 */
+    background-color: var(--background-primary) !important; /* 深灰色背景 */
     color: #ffffff; /* 白色文本 */
 }
 
@@ -190,7 +189,7 @@ div.mermaid-popup-button:hover, div.mermaid-popup-button-reading:hover {
 
 /* 表格标题栏样式 */
 .kv-display th {
-    background-color: var(--interactive-accent) !important;
+    background-color: var(--background-primary) !important;
     padding: 10px;
     border: 1px solid #444 !important;  /* 表头的边框 */
     text-align: left;
