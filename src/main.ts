@@ -136,7 +136,7 @@ export default class MermaidPopupPlugin extends Plugin {
             if (!view){ // 文档编辑全部关闭
                 this.RelaseWhenfileClose();
             }
-            if (view && view.getViewType() === 'markdown') {
+            if (view) {
                 // 类型断言为 MarkdownView，以便访问 contentEl
                 let container = view.containerEl;
                 let targetArr = this.GetSettingsClassElementAll(container);
@@ -146,6 +146,7 @@ export default class MermaidPopupPlugin extends Plugin {
                     //console.log('layout-change break', targetArr.length);
                     this.RelaseWhenfileClose();
                 }
+
                 for(var i=0;i<targetArr.length;i++)
                 {
                     this.addPopupButton(targetArr[i] as HTMLElement);
@@ -178,7 +179,7 @@ export default class MermaidPopupPlugin extends Plugin {
 
     isPreviewMode(){
         let view = this.app.workspace.getActiveViewOfType(MarkdownView);
-        return view && view.getViewType() === 'markdown' && view.getMode() == "preview";
+        return view && view.getMode() == "preview";
     }
 
     getOpenBtnInMd_Mark_ByParam(isPreviewMode:boolean){
@@ -489,7 +490,8 @@ export default class MermaidPopupPlugin extends Plugin {
         // Listen for the Escape key to close the popup
         targetElementInPopup.doc.addEventListener('keydown', (evt) => {
             if (evt.key === 'Escape') {
-                targetElementInPopup.doc.body.removeChild(overlay);
+                if(targetElementInPopup.doc.body.contains(overlay))
+                    targetElementInPopup.doc.body.removeChild(overlay);
             }
         });    
         
