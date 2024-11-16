@@ -116,28 +116,36 @@ export default class MermaidPopupPlugin extends Plugin {
 
         // // 监听文档切换事件
         // this.registerEvent(this.app.workspace.on("active-leaf-change", (leaf) => {
-        //     let view = this.app.workspace.getActiveViewOfType(MarkdownView);
-        //     //if (leaf && leaf.view && leaf.view.file) {
-        //     if (view && view.file) {
-        //     // 获取当前打开的文件名
-        //         const fileName = view.file.name;
-        //         console.log(`打开的文档是: ${fileName}`);
+        //         let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        //         //if (leaf && leaf.view && leaf.view.file) {
+        //         if (view && view.file) {
+        //         // 获取当前打开的文件名
+        //             const fileName = view.file.name;
+        //             console.log(`打开的文档是: ${fileName}`);
+        //             let container = view.containerEl;
+        //             let targetArr = this.GetSettingsClassElementAll(container);    
+        //             console.log('leaf-change, targetArr.length', targetArr.length)                
         //         }
         //     }
         // ));
       
         // 监听模式切换事件
         this.registerEvent(this.app.workspace.on('layout-change', () => {
-
+            //console.log('layout-change');
             let view = this.app.workspace.getActiveViewOfType(MarkdownView);
-            if (!view){ // 编辑器关闭
+            if (!view){ // 文档编辑全部关闭
                 this.RelaseWhenfileClose();
             }
             if (view && view.getViewType() === 'markdown') {
                 // 类型断言为 MarkdownView，以便访问 contentEl
-                const mode = view.getMode();
                 let container = view.containerEl;
                 let targetArr = this.GetSettingsClassElementAll(container);
+                //console.log('layout-change targetArr.length', targetArr.length);
+                if (targetArr.length == 0)
+                {
+                    //console.log('layout-change break', targetArr.length);
+                    this.RelaseWhenfileClose();
+                }
                 for(var i=0;i<targetArr.length;i++)
                 {
                     this.addPopupButton(targetArr[i] as HTMLElement);
@@ -283,8 +291,8 @@ export default class MermaidPopupPlugin extends Plugin {
             isDragging = false;
         });
 
-        popupButton.setCssStyles({display:'none'});
-        this.makePopupButtonDisplay_WhenHoverOnContainer(popupButton, target.parentElement as HTMLElement);
+        //popupButton.setCssStyles({display:'none'});
+        //this.makePopupButtonDisplay_WhenHoverOnContainer(popupButton, target.parentElement as HTMLElement);
     }
 
     makePopupButtonDisplay_WhenHoverOnContainer(button:HTMLElement, container:HTMLElement){
