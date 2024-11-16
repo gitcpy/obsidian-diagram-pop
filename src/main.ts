@@ -291,8 +291,8 @@ export default class MermaidPopupPlugin extends Plugin {
             isDragging = false;
         });
 
-        //popupButton.setCssStyles({display:'none'});
-        //this.makePopupButtonDisplay_WhenHoverOnContainer(popupButton, target.parentElement as HTMLElement);
+        popupButton.setCssStyles({display:'none'});
+        this.makePopupButtonDisplay_WhenHoverOnContainer(popupButton, target.parentElement as HTMLElement);
     }
 
     makePopupButtonDisplay_WhenHoverOnContainer(button:HTMLElement, container:HTMLElement){
